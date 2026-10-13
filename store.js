@@ -3,12 +3,9 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 
 // ─── MongoDB Connection ─────────────────────────────────────
-// Standard multi-seed replicaSet URL to avoid querySrv DNS issues
-let MONGO_URI = process.env.MONGODB_URI || 'mongodb://purplegamingboom_db_user:WO3o5hVxmHtrCdDN@ac-mrqqfhb-shard-00-00.xutfmjs.mongodb.net:27017,ac-mrqqfhb-shard-00-01.xutfmjs.mongodb.net:27017,ac-mrqqfhb-shard-00-02.xutfmjs.mongodb.net:27017/gomerch?ssl=true&replicaSet=atlas-k4oiny-shard-0&authSource=admin&retryWrites=true&w=majority';
-
-if (MONGO_URI.includes('mongodb+srv://') && MONGO_URI.includes('payment.xutfmjs.mongodb.net')) {
-    console.log('Detected mongodb+srv URL for payment cluster. Converting to replica set URL.');
-    MONGO_URI = 'mongodb://purplegamingboom_db_user:WO3o5hVxmHtrCdDN@ac-mrqqfhb-shard-00-00.xutfmjs.mongodb.net:27017,ac-mrqqfhb-shard-00-01.xutfmjs.mongodb.net:27017,ac-mrqqfhb-shard-00-02.xutfmjs.mongodb.net:27017/gomerch?ssl=true&replicaSet=atlas-k4oiny-shard-0&authSource=admin&retryWrites=true&w=majority';
+const MONGO_URI = process.env.MONGODB_URI;
+if (!MONGO_URI) {
+    throw new Error('MONGODB_URI belum di-set. Isi di Environment Variables (Vercel) atau file .env (lokal).');
 }
 
 let connectionPromise = null;
@@ -268,3 +265,4 @@ module.exports = {
     // API Key
     createApiKey, getApiKeyByKey, listApiKeys, deleteApiKey, touchApiKey
 };
+        
