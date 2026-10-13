@@ -2,7 +2,10 @@ const jwt = require('jsonwebtoken');
 const store = require('../store');
 const GoMerchant = require('../GoMerchant');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'zentrapay-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+    throw new Error('JWT_SECRET belum di-set atau terlalu pendek (minimal 32 karakter).');
+}
 const sdk = new GoMerchant();
 
 /**
@@ -145,3 +148,4 @@ async function apiKeyAuth(req, res, next) {
 }
 
 module.exports = { sessionAuth, apiAuth, apiKeyAuth, generateToken, JWT_SECRET };
+            
