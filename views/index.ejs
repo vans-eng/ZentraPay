@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZentraPay | Portal Merchant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8FAFC; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .step-content { display: none; }
+        .step-content.active { display: block; animation: fadeInUp 0.4s ease-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .console-text { font-family: 'Fira Code', 'Menlo', monospace; font-size: 11px; }
+        .premium-card { background: white; border: 1px solid #F1F5F9; box-shadow: 0 4px 20px -10px rgba(0,0,0,0.05); }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .drop-zone--over { border-color: #10b981 !important; background-color: #ecfdf5 !important; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slideUp { animation: slideUp 0.4s ease-out; }
+    </style>
+</head>
+<body class="text-slate-900 antialiased min-h-screen">
+
+    <nav class="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div class="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
+                    <i data-lucide="zap" class="w-4 h-4 text-emerald-400 fill-emerald-400"></i>
+                </div>
+                <span class="font-extrabold text-base tracking-tight">Zentra<span class="text-emerald-600">Pay</span></span>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="https://t.me/fanzxystore" target="_blank" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-xl transition-all text-xs font-bold text-sky-600 hover:text-sky-700">
+                    <i data-lucide="send" class="w-3 h-3"></i>
+                    @fanzxystore
+                </a>
+                <a href="/docs" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-all text-xs font-bold text-slate-500 hover:text-slate-700">
+                    <i data-lucide="book-open" class="w-3 h-3"></i>
+                    API Docs
+                </a>
+                <div id="auth-indicator" class="hidden flex items-center gap-2 px-2.5 py-1 bg-emerald-50 rounded-full border border-emerald-100">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Connected</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-5 md:py-10">
+        
+        <div id="step-login" class="step-content active w-full max-w-md mx-auto pt-6">
+            <div class="premium-card rounded-[2rem] p-8">
+                <div class="mb-8 text-center">
+                    <h2 class="text-2xl font-extrabold text-slate-900">Merchant Access</h2>
+                    <p class="text-slate-400 mt-1 text-sm">Masuk ke dashboard GoBiz Merchant</p>
+                </div>
+                <form id="login-form" class="space-y-5">
+                    <div class="space-y-2">
+                        <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nomor WhatsApp</label>
+                        <div class="flex items-center bg-slate-50 border border-slate-200 rounded-xl focus-within:border-emerald-500 transition-all overflow-hidden">
+                            <span class="pl-4 pr-2 text-slate-400 font-bold text-sm">+62</span>
+                            <input type="number" id="phone-input" placeholder="83826724514" required class="w-full bg-transparent p-3.5 outline-none font-bold text-slate-700 text-sm">
+                        </div>
+                    </div>
+                    <button type="submit" id="login-btn" class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-emerald-600 transition-all flex items-center justify-center gap-2 group shadow-lg shadow-slate-100">
+                        <span>Lanjutkan</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="step-verify" class="step-content w-full max-w-md mx-auto pt-6">
+            <div class="premium-card rounded-[2rem] p-8">
+                <div class="mb-8 text-center">
+                    <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="shield-check" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-2xl font-extrabold">Verifikasi OTP</h2>
+                    <p class="text-slate-400 mt-1 text-sm">Kode dikirim ke <span id="phone-target" class="text-slate-900 font-bold"></span></p>
+                </div>
+                <form id="verify-form" class="space-y-6">
+                    <input type="hidden" id="otp-token-cache">
+                    <input type="hidden" id="otp-input" required>
+                    <div class="grid grid-cols-4 gap-3" id="otp-boxes">
+                        <input type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code" class="otp-digit h-16 rounded-2xl border border-slate-200 bg-slate-50 text-center text-3xl font-black text-indigo-600 outline-none transition-all focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-50">
+                        <input type="text" inputmode="numeric" maxlength="1" class="otp-digit h-16 rounded-2xl border border-slate-200 bg-slate-50 text-center text-3xl font-black text-indigo-600 outline-none transition-all focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-50">
+                        <input type="text" inputmode="numeric" maxlength="1" class="otp-digit h-16 rounded-2xl border border-slate-200 bg-slate-50 text-center text-3xl font-black text-indigo-600 outline-none transition-all focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-50">
+                        <input type="text" inputmode="numeric" maxlength="1" class="otp-digit h-16 rounded-2xl border border-slate-200 bg-slate-50 text-center text-3xl font-black text-indigo-600 outline-none transition-all focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-50">
+                    </div>
+                    <p class="text-center text-[10px] font-bold text-slate-400">Tempel kode OTP, kolom akan terisi otomatis.</p>
+                    <button type="submit" id="verify-btn" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-50">Verifikasi</button>
+                    <button type="button" onclick="goToStep('login')" class="w-full text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:text-slate-600">Ganti Nomor HP</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="step-dashboard" class="step-content space-y-5">
+            <div class="premium-card rounded-3xl p-5 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="w-full md:w-auto grid gap-3 md:grid-cols-2">
+                    <div>
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Access Token</span>
+                        <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl">
+                            <i data-lucide="key" class="w-3 h-3 text-emerald-500"></i>
+                            <code id="token-val" class="text-[10px] font-mono font-bold text-slate-500 truncate max-w-[150px] md:max-w-[220px]">...</code>
+                            <button onclick="copyToken('token-val', event)" class="p-1.5 hover:bg-white rounded-lg text-slate-400 hover:text-emerald-600 transition-all">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Refresh Token</span>
+                        <div class="flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-xl">
+                            <i data-lucide="rotate-cw" class="w-3 h-3 text-indigo-500"></i>
+                            <code id="refresh-token-val" class="text-[10px] font-mono font-bold text-indigo-500 truncate max-w-[150px] md:max-w-[220px]">...</code>
+                            <button onclick="copyToken('refresh-token-val', event)" class="p-1.5 hover:bg-white rounded-lg text-slate-400 hover:text-indigo-600 transition-all">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2 flex items-center gap-2 text-[10px] font-bold text-slate-400">
+                        <span id="token-status-dot" class="w-2 h-2 rounded-full bg-slate-300"></span>
+                        <span id="token-status-text">Token belum divalidasi</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <button onclick="handleLogout()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-rose-50 text-rose-600 rounded-xl font-bold text-xs hover:bg-rose-100 transition-colors">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
+                <button onclick="openQris()" class="flex-1 min-w-[100px] bg-emerald-600 text-white py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-50 hover:bg-emerald-700 transition-all">
+                    <i data-lucide="qr-code" class="w-4 h-4"></i>
+                    <span class="text-[10px] font-black uppercase tracking-widest">QRIS</span>
+                </button>
+                <button onclick="fetchTransactions()" class="flex-1 min-w-[100px] bg-slate-900 text-white py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2.5 shadow-lg shadow-slate-100 hover:bg-slate-800 transition-all">
+                    <i data-lucide="history" class="w-4 h-4"></i>
+                    <span class="text-[10px] font-black uppercase tracking-widest">History</span>
+                </button>
+                <button onclick="fetchPayouts()" class="flex-1 min-w-[100px] bg-white text-slate-700 py-3.5 px-4 border border-slate-200 rounded-2xl flex items-center justify-center gap-2.5 hover:bg-slate-50 transition-all shadow-sm">
+                    <i data-lucide="landmark" class="w-4 h-4 text-indigo-500"></i>
+                    <span class="text-[10px] font-black uppercase tracking-widest">Payouts</span>
+                </button>
+                <button onclick="fetchApiKeys()" class="flex-1 min-w-[100px] bg-gradient-to-r from-violet-600 to-indigo-600 text-white py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2.5 shadow-lg shadow-indigo-100 hover:from-violet-700 hover:to-indigo-700 transition-all">
+                    <i data-lucide="key-round" class="w-4 h-4"></i>
+                    <span class="text-[10px] font-black uppercase tracking-widest">API Keys</span>
+                </button>
+                <button onclick="fetchSettings()" class="flex-1 min-w-[100px] bg-slate-100 text-slate-700 py-3.5 px-4 rounded-2xl border border-slate-200 flex items-center justify-center gap-2.5 hover:bg-slate-200 transition-all">
+                    <i data-lucide="settings" class="w-4 h-4 text-slate-500"></i>
+                    <span class="text-[10px] font-black uppercase tracking-widest">Settings</span>
+                </button>
+            </div>
+
+            <div id="dashboard-loader" class="hidden py-20 text-center bg-white rounded-3xl border border-slate-100">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-[3px] border-slate-100 border-t-emerald-600"></div>
+            </div>
+            <div id="dashboard-view" class="min-h-[250px]">
+                <div class="bg-white rounded-[2rem] p-16 text-center border-2 border-dashed border-slate-100 opacity-40">
+                    <i data-lucide="mouse-pointer-2" class="w-8 h-8 text-slate-200 mx-auto mb-3"></i>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Pilih Menu Untuk Memuat Data</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="fixed bottom-0 left-0 w-full z-[60]">
+        <button onclick="toggleConsole()" class="absolute -top-9 right-5 bg-slate-950 text-white px-4 py-2 rounded-t-xl text-[9px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-600 transition-all">
+            <i data-lucide="terminal" class="w-3 h-3 text-emerald-400"></i> Console
+        </button>
+        <div id="console-body" class="h-0 bg-slate-950 text-emerald-500 transition-all duration-300 overflow-hidden border-t border-emerald-900/30">
+            <div class="p-4 h-full flex flex-col">
+                <div class="flex justify-between items-center mb-3 border-b border-emerald-900/10 pb-2">
+                    <span class="text-[9px] font-black uppercase tracking-widest text-emerald-800">API Traffic Monitor</span>
+                    <button onclick="clearLogs()" class="text-[9px] font-bold hover:text-white">Clear</button>
+                </div>
+                <div id="console-logs" class="flex-1 overflow-y-auto console-text space-y-3 no-scrollbar">
+                    <div class="text-emerald-900 italic">-- Listening for merchant API events --</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QRIS Modal -->
+    <div id="qris-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-5">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeQris()"></div>
+        <div class="relative bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl animate-slideUp max-h-[90vh] overflow-y-auto no-scrollbar">
+            <h3 class="text-xl font-extrabold mb-6 text-center tracking-tight">QRIS Dinamis</h3>
+            <div class="space-y-4">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <label class="block text-[9px] font-black text-slate-400 uppercase mb-2 ml-1">Nominal (IDR)</label>
+                    <input type="number" id="qr-amount" placeholder="30000" class="w-full bg-transparent text-xl font-black outline-none text-slate-800">
+                </div>
+
+                <div id="qr-status-indicator" class="p-4 rounded-xl border flex items-center gap-3 bg-emerald-50/20 border-emerald-100 text-emerald-600">
+                    <i data-lucide="check-circle" class="w-5 h-5 flex-shrink-0"></i>
+                    <div>
+                        <p class="text-[9px] font-black uppercase tracking-wider">QRIS Terhubung</p>
+                        <p class="text-[10px] text-slate-500 font-medium">QRIS Statis diambil otomatis dari menu Settings</p>
+                    </div>
+                </div>
+
+                <div class="hidden bg-slate-50 p-4 rounded-xl border border-slate-100 focus-within:border-emerald-500 transition-colors">
+                    <label class="block text-[9px] font-black text-slate-400 uppercase mb-2 ml-1">Static QR String</label>
+                    <textarea id="qr-static" class="w-full bg-transparent text-[10px] font-mono h-16 outline-none resize-none text-slate-700" placeholder="000201010212..."></textarea>
+                </div>
+                
+                <button onclick="handleQRGen()" id="qr-btn" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-emerald-100 hover:from-emerald-700 hover:to-teal-700 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="zap" class="w-4 h-4"></i>
+                    <span>Generate QRIS Dinamis</span>
+                </button>
+                
+                <div id="qr-res" class="hidden text-center space-y-4 pt-4 border-t border-slate-50">
+                    <img id="qr-img" class="w-44 h-44 mx-auto border-2 border-slate-50 rounded-2xl p-1 bg-white">
+                    <div class="flex flex-col items-center gap-1.5">
+                        <div class="flex items-center gap-2">
+                             <span id="polling-dot" class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                             <p id="qr-status" class="text-[9px] font-black text-orange-500 tracking-widest uppercase">Waiting Payment</p>
+                        </div>
+                        <button onclick="checkQR()" class="text-emerald-600 text-[9px] font-black underline underline-offset-4 tracking-widest uppercase opacity-60 hover:opacity-100">Manual Check</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create API Key Modal -->
+    <div id="apikey-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-5">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeApiKeyModal()"></div>
+        <div class="relative bg-white rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl animate-slideUp">
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 bg-gradient-to-br from-violet-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="key-round" class="w-7 h-7 text-indigo-600"></i>
+                </div>
+                <h3 class="text-xl font-extrabold tracking-tight">Create API Key</h3>
+                <p class="text-sm text-slate-400 mt-1">Buat API key untuk integrasi eksternal</p>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <label class="block text-[9px] font-black text-slate-400 uppercase mb-2 ml-1">Nama / Label</label>
+                    <input type="text" id="apikey-name" placeholder="Bot Telegram, Website, etc." class="w-full bg-transparent text-sm font-bold outline-none text-slate-800">
+                </div>
+                <button onclick="createApiKey()" id="create-apikey-btn" class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-indigo-100 hover:from-violet-700 hover:to-indigo-700 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Generate API Key</span>
+                </button>
+            </div>
+            <!-- Created key display -->
+            <div id="created-key-display" class="hidden mt-5 animate-fadeIn">
+                <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-5">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
+                        <span class="text-[9px] font-black text-emerald-700 uppercase tracking-widest">API Key Created!</span>
+                    </div>
+                    <div class="bg-white rounded-xl p-3 border border-emerald-100">
+                        <code id="new-apikey-value" class="text-[10px] font-mono font-bold text-slate-700 break-all block"></code>
+                    </div>
+                    <button onclick="copyNewApiKey()" class="mt-3 w-full bg-emerald-600 text-white py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-emerald-700 transition-colors">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                        <span id="copy-new-key-label">Copy API Key</span>
+                    </button>
+                    <p class="text-[9px] text-emerald-600 font-bold mt-3 text-center">⚠️ Simpan API key ini! Tidak bisa dilihat lagi setelah modal ditutup.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-5">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeDeleteModal()"></div>
+        <div class="relative bg-white rounded-[2rem] w-full max-w-xs p-7 shadow-2xl animate-slideUp text-center">
+            <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="trash-2" class="w-6 h-6 text-rose-600"></i>
+            </div>
+            <h3 class="text-lg font-extrabold mb-2">Hapus API Key?</h3>
+            <p class="text-xs text-slate-400 mb-5">Semua integrasi yang menggunakan key ini akan berhenti bekerja.</p>
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()" class="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs hover:bg-slate-200 transition-colors">Batal</button>
+                <button onclick="confirmDeleteApiKey()" class="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold text-xs hover:bg-rose-700 transition-colors">Hapus</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let pollingInterval = null;
+        let qData = null;
+        let isRefreshingToken = false;
+        let pendingDeleteKey = null;
+
+        const otpDigits = Array.from(document.querySelectorAll('.otp-digit'));
+
+        function syncOtpValue() {
+            document.getElementById('otp-input').value = otpDigits.map(input => input.value).join('');
+        }
+
+        function fillOtpDigits(value) {
+            const digits = value.replace(/\D/g, '').slice(0, 4).split('');
+            otpDigits.forEach((input, index) => {
+                input.value = digits[index] || '';
+            });
+            syncOtpValue();
+            if (digits.length === 4) document.getElementById('verify-btn').focus();
+            else otpDigits[Math.min(digits.length, otpDigits.length - 1)]?.focus();
+        }
+
+        otpDigits.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                const value = e.target.value.replace(/\D/g, '');
+                if (value.length > 1) {
+                    fillOtpDigits(value);
+                    return;
+                }
+                e.target.value = value;
+                syncOtpValue();
+                if (value && otpDigits[index + 1]) otpDigits[index + 1].focus();
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && otpDigits[index - 1]) otpDigits[index - 1].focus();
+            });
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                fillOtpDigits(e.clipboardData.getData('text'));
+            });
+        });
+
+        function goToStep(id) {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('step-' + id).classList.add('active');
+            document.getElementById('auth-indicator').classList.toggle('hidden', id !== 'dashboard');
+        }
+
+        function toggleConsole() {
+            const el = document.getElementById('console-body');
+            el.style.height = el.style.height === '260px' ? '0px' : '260px';
+        }
+
+        function clearLogs() {
+            document.getElementById('console-logs').innerHTML = `<div class="text-emerald-900 italic">-- Logs cleared --</div>`;
+        }
+
+        function logAPI(method, url, body, status, data) {
+            const logs = document.getElementById('console-logs');
+            if(logs.innerHTML.includes('-- Listening')) logs.innerHTML = '';
+            const logId = 'log-' + Math.random().toString(36).substr(2, 9);
+            const time = new Date().toLocaleTimeString();
+            const html = `
+                <div class="border-l-2 border-emerald-900 pl-3 py-1 animate-fadeIn">
+                    <div class="flex justify-between items-center opacity-60">
+                        <span class="text-[9px] font-bold">${time} | ${method} ${url}</span>
+                        <span class="${status < 400 ? 'text-emerald-400' : 'text-rose-500'} font-bold">${status}</span>
+                    </div>
+                    <div class="mt-1 flex gap-2">
+                        <button onclick="copyLog('${logId}')" class="bg-emerald-900/30 px-2 rounded text-[9px] hover:bg-emerald-800">Copy JSON</button>
+                    </div>
+                    <div id="${logId}" class="hidden">${JSON.stringify({body, data}, null, 2)}</div>
+                </div>
+            `;
+            logs.insertAdjacentHTML('afterbegin', html);
+        }
+
+        function copyLog(id) {
+            navigator.clipboard.writeText(document.getElementById(id).innerText);
+            event.target.innerText = 'Copied!';
+            setTimeout(() => event.target.innerText = 'Copy JSON', 2000);
+        }
+
+        function copyToken(elementId, e) {
+            navigator.clipboard.writeText(document.getElementById(elementId).innerText);
+            const btn = e.currentTarget;
+            btn.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i>';
+            lucide.createIcons();
+            setTimeout(() => { btn.innerHTML = '<i data-lucide="copy" class="w-3.5 h-3.5"></i>'; lucide.createIcons(); }, 2000);
+        }
+
+        function getTokenPair(payload) {
+            const source = payload?.data?.data || payload?.data || payload || {};
+            return {
+                accessToken: source.access_token || source.token || source.accessToken,
+                refreshToken: source.refresh_token || source.refreshToken
+            };
+        }
+
+        function setTokenStatus(text, state = 'idle') {
+            const dot = document.getElementById('token-status-dot');
+            const label = document.getElementById('token-status-text');
+            if (!dot || !label) return;
+            dot.className = 'w-2 h-2 rounded-full ' + (state === 'valid' ? 'bg-emerald-500 animate-pulse' : state === 'invalid' ? 'bg-rose-500' : state === 'refreshing' ? 'bg-indigo-500 animate-pulse' : 'bg-slate-300');
+            label.innerText = text;
+        }
+
+        function saveTokens(accessToken, refreshToken) {
+            if (accessToken) {
+                localStorage.setItem('access_token', accessToken);
+                document.getElementById('token-val').innerText = accessToken;
+            }
+            if (refreshToken) {
+                localStorage.setItem('refresh_token', refreshToken);
+                document.getElementById('refresh-token-val').innerText = refreshToken;
+            }
+        }
+
+        function isExpiredTokenResponse(data, status = 0) {
+            const message = JSON.stringify(data?.error || data?.data?.error || data || '').toLowerCase();
+            return status === 401 || message.includes('expired token') || message.includes('invalid/expired') || message.includes('invalid token');
+        }
+
+        async function refreshAccessToken() {
+            const refresh_token = localStorage.getItem('refresh_token');
+            if (!refresh_token || isRefreshingToken) return false;
+            isRefreshingToken = true;
+            setTokenStatus('Access token expired, mencoba refresh token...', 'refreshing');
+            try {
+                const res = await fetchJSON('/auth/refresh/token', 'POST', { refresh_token });
+                const pair = getTokenPair(res);
+                if (res.success && pair.accessToken) {
+                    saveTokens(pair.accessToken, pair.refreshToken || refresh_token);
+                    setTokenStatus('Token valid setelah refresh', 'valid');
+                    return true;
+                }
+                return false;
+            } finally {
+                isRefreshingToken = false;
+            }
+        }
+
+        async function validateCurrentSession() {
+            const token = localStorage.getItem('access_token');
+            const refreshToken = localStorage.getItem('refresh_token');
+            if (!token) return false;
+            saveTokens(token, refreshToken);
+            setTokenStatus('Memvalidasi token...', 'refreshing');
+            const res = await fetchJSON('/api/validate', 'POST', { token });
+            if (res.success) {
+                setTokenStatus('Token aktif dan valid', 'valid');
+                return true;
+            }
+            if (isExpiredTokenResponse(res, res._httpStatus) && await refreshAccessToken()) return true;
+            forceLogout('Sesi sudah tidak valid. Silakan login lagi.');
+            return false;
+        }
+
+        async function authFetchJSON(url, method, body = {}) {
+            const token = localStorage.getItem('access_token');
+            let payload = { ...body, token };
+            let res = await fetchJSON(url, method, payload);
+            if (res.success || !isExpiredTokenResponse(res, res._httpStatus)) return res;
+
+            const refreshed = await refreshAccessToken();
+            if (!refreshed) {
+                forceLogout('Refresh token expired/invalid. Silakan login ulang.');
+                return res;
+            }
+
+            payload = { ...body, token: localStorage.getItem('access_token') };
+            res = await fetchJSON(url, method, payload);
+            if (!res.success && isExpiredTokenResponse(res, res._httpStatus)) forceLogout('Sesi sudah tidak valid. Silakan login ulang.');
+            return res;
+        }
+
+        async function fetchJSON(url, method, body = null) {
+            const options = { 
+                method, 
+                headers: { 'Content-Type': 'application/json' } 
+            };
+            if(body) options.body = JSON.stringify(body);
+
+            try {
+                const res = await fetch(url, options);
+                const status = res.status;
+                const data = await res.json();
+                Object.defineProperty(data, '_httpStatus', { value: status, enumerable: false });
+                logAPI(method, url, body, status, data);
+                return data;
+            } catch (err) {
+                logAPI(method, url, body, 500, { error: err.message });
+                throw err;
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('phone-input').value;
+            const btn = document.getElementById('login-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin rounded-full h-4 w-4 border-2 border-white/20 border-t-white"></span>`;
+            try {
+                const res = await fetchJSON('/auth/otp', 'POST', { phone: "+62" + phone });
+                if(res.success && res.data?.data?.otp_token) {
+                    document.getElementById('otp-token-cache').value = res.data.data.otp_token;
+                    document.getElementById('phone-target').innerText = "+62" + phone;
+                    fillOtpDigits('');
+                    goToStep('verify');
+                    otpDigits[0]?.focus();
+                } else alert(res.message || "Gagal kirim OTP");
+            } catch(e) { alert("Network Error"); }
+            finally { 
+                btn.disabled = false; 
+                btn.innerHTML = `<span>Lanjutkan</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+                lucide.createIcons();
+            }
+        });
+
+        document.getElementById('verify-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const otp = document.getElementById('otp-input').value;
+            const otp_token = document.getElementById('otp-token-cache').value;
+            if (otp.length !== 4) return alert('OTP wajib 4 digit.');
+            const btn = document.getElementById('verify-btn');
+            btn.disabled = true;
+            try {
+                const res = await fetchJSON('/auth/verify', 'POST', { otp, otp_token });
+                const pair = getTokenPair(res);
+                if(res.success && pair.accessToken) {
+                    saveTokens(pair.accessToken, pair.refreshToken);
+                    // Save active phone to localStorage so it persists on page reload/session refresh
+                    const verifiedPhone = document.getElementById('phone-target').innerText;
+                    if (verifiedPhone) localStorage.setItem('merchant_phone', verifiedPhone);
+                    setTokenStatus('Token aktif dan valid', 'valid');
+                    goToStep('dashboard');
+                } else alert(res.message || "OTP Salah");
+            } catch(e) { alert("Verifikasi Gagal"); }
+            finally { btn.disabled = false; }
+        });
+
+        const formatIDR = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+
+        async function fetchTransactions() {
+            setDashboardLoader(true);
+            try {
+                const res = await authFetchJSON('/api/history', 'POST');
+                renderTable("Recent History", ["ID Ref", "Waktu", "Metode", "Nominal"], (res.data?.hits || []).map(h => [
+                    `<span class="font-mono text-[9px] opacity-40">${h.reference_id}</span>`,
+                    `<span class="font-bold">${new Date(h.time).toLocaleTimeString()}</span>`,
+                    `<span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded text-[9px] font-black uppercase">${h.metadata?.transaction?.payment_type || 'N/A'}</span>`,
+                    `<span class="font-black text-emerald-600">${formatIDR(h.amount / 100)}</span>`
+                ]));
+            } catch(e) {}
+            setDashboardLoader(false);
+        }
+
+        async function fetchPayouts() {
+            setDashboardLoader(true);
+            try {
+                const res = await authFetchJSON('/api/payouts', 'POST');
+                renderTable("Payout Records", ["Bank", "Recipient", "Status", "Nett"], (res.data?.payouts || []).map(p => [
+                    `<span class="font-black uppercase">${p.bank_name}</span>`,
+                    `<span class="text-[10px] text-slate-500">${p.account_name}</span>`,
+                    `<span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[9px] font-black uppercase">${p.status}</span>`,
+                    `<span class="font-black text-indigo-600">${formatIDR(parseFloat(p.net_amount) / 100)}</span>`
+                ]));
+            } catch(e) {}
+            setDashboardLoader(false);
+        }
+
+        function renderTable(title, headers, rows) {
+            let html = `
+                <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm animate-fadeIn">
+                    <div class="p-5 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+                        <h4 class="text-[9px] font-black text-slate-800 uppercase tracking-widest">${title}</h4>
+                        <span class="text-[8px] font-bold text-slate-400 border border-slate-100 bg-white px-2 py-0.5 rounded-full">${rows.length} Items</span>
+                    </div>
+                    <div class="overflow-x-auto no-scrollbar">
+                        <table class="w-full text-left min-w-[500px]">
+                            <thead>
+                                <tr class="text-slate-400 text-[8px] font-black uppercase tracking-widest border-b border-slate-50 bg-slate-50/10">
+                                    ${headers.map(h => `<th class="py-4 px-6">${h}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                ${rows.length ? rows.map(r => `
+                                    <tr class="hover:bg-slate-50/50 transition-colors">
+                                        ${r.map(c => `<td class="py-4 px-6 text-xs">${c}</td>`).join('')}
+                                    </tr>
+                                `).join('') : `<tr><td colspan="${headers.length}" class="py-20 text-center text-slate-300 italic text-[9px] font-bold uppercase tracking-widest">No Data</td></tr>`}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            document.getElementById('dashboard-view').innerHTML = html;
+        }
+
+        // ─── API Key Management ─────────────────────────
+
+        function openApiKeyModal() {
+            document.getElementById('apikey-modal').classList.remove('hidden');
+            document.getElementById('apikey-name').value = '';
+            document.getElementById('created-key-display').classList.add('hidden');
+            document.getElementById('create-apikey-btn').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeApiKeyModal() {
+            document.getElementById('apikey-modal').classList.add('hidden');
+        }
+
+        async function createApiKey() {
+            const name = document.getElementById('apikey-name').value.trim() || 'Unnamed Key';
+            const btn = document.getElementById('create-apikey-btn');
+            const access_token = localStorage.getItem('access_token');
+            const refresh_token = localStorage.getItem('refresh_token');
+
+            if (!access_token) {
+                alert('Anda harus login terlebih dahulu');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="animate-spin rounded-full h-4 w-4 border-2 border-white/20 border-t-white"></span>';
+
+            try {
+                const res = await fetchJSON('/dashboard/apikeys/create', 'POST', {
+                    name,
+                    access_token,
+                    refresh_token,
+                    merchant_phone: document.getElementById('phone-target')?.innerText || ''
+                });
+
+                if (res.success) {
+                    document.getElementById('new-apikey-value').innerText = res.data.key;
+                    document.getElementById('created-key-display').classList.remove('hidden');
+                    btn.classList.add('hidden');
+                    document.getElementById('copy-new-key-label').innerText = 'Copy API Key';
+                    lucide.createIcons();
+                } else {
+                    alert(res.error || 'Gagal membuat API key');
+                }
+            } catch (e) {
+                alert('Network Error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="plus" class="w-4 h-4"></i><span>Generate API Key</span>';
+                lucide.createIcons();
+            }
+        }
+
+        function copyNewApiKey() {
+            const key = document.getElementById('new-apikey-value').innerText;
+            navigator.clipboard.writeText(key);
+            document.getElementById('copy-new-key-label').innerText = 'Copied!';
+            setTimeout(() => { document.getElementById('copy-new-key-label').innerText = 'Copy API Key'; }, 2000);
+        }
+
+        async function fetchApiKeys() {
+            setDashboardLoader(true);
+            try {
+                const res = await fetchJSON('/dashboard/apikeys/list', 'POST');
+                const keys = res.data || [];
+                renderApiKeysPanel(keys);
+            } catch (e) {}
+            setDashboardLoader(false);
+        }
+
+        function renderApiKeysPanel(keys) {
+            const statusBadge = (lastUsed) => {
+                if (!lastUsed) return '<span class="px-2 py-0.5 bg-slate-100 text-slate-400 rounded text-[9px] font-black uppercase">Never Used</span>';
+                const ago = Date.now() - new Date(lastUsed).getTime();
+                if (ago < 3600000) return '<span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded text-[9px] font-black uppercase">Active</span>';
+                return '<span class="px-2 py-0.5 bg-amber-50 text-amber-600 rounded text-[9px] font-black uppercase">Idle</span>';
+            };
+
+            let html = `
+                <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm animate-fadeIn">
+                    <div class="p-5 border-b border-slate-50 flex justify-between items-center bg-gradient-to-r from-violet-50/50 to-indigo-50/50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                                <i data-lucide="key-round" class="w-4 h-4 text-white"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-[9px] font-black text-slate-800 uppercase tracking-widest">API Keys</h4>
+                                <p class="text-[8px] text-slate-400 font-bold">${keys.length} key(s) registered</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a href="/docs" target="_blank" class="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-all uppercase tracking-widest">
+                                <i data-lucide="book-open" class="w-3 h-3"></i> Docs
+                            </a>
+                            <button onclick="openApiKeyModal()" class="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-indigo-100 hover:from-violet-700 hover:to-indigo-700 transition-all">
+                                <i data-lucide="plus" class="w-3 h-3"></i> Create
+                            </button>
+                        </div>
+                    </div>
+                    ${keys.length ? `
+                        <div class="divide-y divide-slate-50">
+                            ${keys.map(k => `
+                                <div class="p-5 hover:bg-slate-50/50 transition-colors group">
+                                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <span class="text-sm font-extrabold text-slate-800">${k.name}</span>
+                                                ${statusBadge(k.last_used)}
+                                            </div>
+                                            <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl w-fit max-w-full">
+                                                <i data-lucide="key" class="w-3 h-3 text-indigo-500 flex-shrink-0"></i>
+                                                <code class="text-[10px] font-mono font-bold text-slate-500 truncate">${k.key_preview}</code>
+                                                <button onclick="copyApiKeyFull('${k.key}', event)" class="p-1 hover:bg-white rounded text-slate-400 hover:text-indigo-600 transition-all flex-shrink-0">
+                                                    <i data-lucide="copy" class="w-3 h-3"></i>
+                                                </button>
+                                            </div>
+                                            <div class="flex items-center gap-4 mt-2 text-[9px] font-bold text-slate-400">
+                                                <span>Created: ${new Date(k.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                                ${k.last_used ? `<span>Last used: ${new Date(k.last_used).toLocaleString('id-ID')}</span>` : ''}
+                                            </div>
+                                        </div>
+                                        <button onclick="promptDeleteApiKey('${k.key}')" class="flex items-center gap-1.5 px-3 py-2 bg-rose-50 text-rose-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-colors opacity-0 group-hover:opacity-100 md:opacity-100">
+                                            <i data-lucide="trash-2" class="w-3 h-3"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <div class="py-16 text-center">
+                            <div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="key-round" class="w-7 h-7 text-slate-200"></i>
+                            </div>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Belum Ada API Key</p>
+                            <p class="text-xs text-slate-300">Buat API key untuk mengintegrasikan QRIS ke bot atau web Anda</p>
+                            <button onclick="openApiKeyModal()" class="mt-5 inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-100 hover:from-violet-700 hover:to-indigo-700 transition-all">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                Buat API Key Pertama
+                            </button>
+                        </div>
+                    `}
+                </div>
+            `;
+            document.getElementById('dashboard-view').innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function copyApiKeyFull(key, e) {
+            navigator.clipboard.writeText(key);
+            const btn = e.currentTarget;
+            btn.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-emerald-600"></i>';
+            lucide.createIcons();
+            setTimeout(() => { btn.innerHTML = '<i data-lucide="copy" class="w-3 h-3"></i>'; lucide.createIcons(); }, 2000);
+        }
+
+        function promptDeleteApiKey(key) {
+            pendingDeleteKey = key;
+            document.getElementById('delete-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').classList.add('hidden');
+            pendingDeleteKey = null;
+        }
+
+        async function confirmDeleteApiKey() {
+            if (!pendingDeleteKey) return;
+            closeDeleteModal();
+            try {
+                const res = await fetchJSON('/dashboard/apikeys/delete', 'POST', { key: pendingDeleteKey });
+                if (res.success) {
+                    fetchApiKeys();
+                } else {
+                    alert(res.error || 'Gagal menghapus API key');
+                }
+            } catch (e) {
+                alert('Network Error');
+            }
+            pendingDeleteKey = null;
+        }
+
+        async function openQris() { 
+            document.getElementById('qris-modal').classList.remove('hidden'); 
+            lucide.createIcons();
+            
+            const merchant_phone = localStorage.getItem('merchant_phone') || document.getElementById('phone-target')?.innerText || '';
+            let loaded = false;
+            if (merchant_phone) {
+                try {
+                    const res = await fetchJSON('/dashboard/settings/get-qr', 'POST', { merchant_phone });
+                    if (res.success && res.static_qr) {
+                        document.getElementById('qr-static').value = res.static_qr;
+                        const statusIndicator = document.getElementById('qr-status-indicator');
+                        statusIndicator.className = "p-4 rounded-xl border flex items-center gap-3 bg-emerald-50/20 border-emerald-100 text-emerald-600 animate-fadeIn";
+                        statusIndicator.innerHTML = `
+                            <i data-lucide="check-circle" class="w-5 h-5 flex-shrink-0"></i>
+                            <div>
+                                <p class="text-[9px] font-black uppercase tracking-wider">QRIS Terhubung</p>
+                                <p class="text-[10px] text-slate-500 font-medium">QRIS Statis diambil otomatis dari menu Settings</p>
+                            </div>
+                        `;
+                        lucide.createIcons();
+                        loaded = true;
+                    }
+                } catch(e) {}
+            }
+            
+            if (!loaded) {
+                document.getElementById('qr-static').value = '';
+                const statusIndicator = document.getElementById('qr-status-indicator');
+                statusIndicator.className = "p-4 rounded-xl border flex items-center gap-3 bg-rose-50/20 border-rose-100 text-rose-600 animate-fadeIn";
+                statusIndicator.innerHTML = `
+                    <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
+                    <div>
+                        <p class="text-[9px] font-black uppercase tracking-wider">QRIS Belum Diset</p>
+                        <p class="text-[10px] text-slate-500 font-medium">Silakan simpan QRIS Statis Anda terlebih dahulu di menu <strong>Settings</strong></p>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+        function closeQris() { 
+            document.getElementById('qris-modal').classList.add('hidden'); 
+            stopPolling();
+        }
+
+
+        async function handleQRGen() {
+            const amount = document.getElementById('qr-amount').value;
+            const static_qr = document.getElementById('qr-static').value;
+            const btn = document.getElementById('qr-btn');
+            if(!amount || !static_qr) return;
+            stopPolling();
+            btn.disabled = true; btn.innerText = "Processing...";
+            try {
+                const now = new Date().toISOString();
+                const qrUrl = `/api/qris/create?amount=${amount}&static_qr=${encodeURIComponent(static_qr)}`;
+                qData = { amount, created_at: now };
+                document.getElementById('qr-img').src = qrUrl;
+                document.getElementById('qr-res').classList.remove('hidden');
+                document.getElementById('qr-status').innerText = "Waiting Payment";
+                document.getElementById('qr-status').classList.replace('text-emerald-500', 'text-orange-500');
+                document.getElementById('polling-dot').classList.replace('bg-emerald-500', 'bg-orange-500');
+                logAPI('GET', qrUrl, null, 200, { message: "QR Generated" });
+                startPolling();
+            } catch(e) { alert("Failed QR"); }
+            finally { btn.disabled = false; btn.innerText = "Generate QR"; }
+        }
+
+        function startPolling() {
+            pollingInterval = setInterval(checkQR, 5000);
+        }
+
+        function stopPolling() {
+            if (pollingInterval) clearInterval(pollingInterval);
+            pollingInterval = null;
+        }
+
+        async function checkQR() {
+            const statusEl = document.getElementById('qr-status');
+            const dotEl = document.getElementById('polling-dot');
+            if (!qData) return;
+            try {
+                const res = await authFetchJSON('/api/qris/status', 'POST', qData);
+                if(res.status === 'PAID') {
+                    statusEl.innerText = "SUCCESSFUL!";
+                    statusEl.classList.replace('text-orange-500', 'text-emerald-500');
+                    dotEl.classList.replace('bg-orange-500', 'bg-emerald-500');
+                    stopPolling();
+                }
+            } catch(e) {}
+        }
+
+        function setDashboardLoader(show) {
+            document.getElementById('dashboard-loader').classList.toggle('hidden', !show);
+            document.getElementById('dashboard-view').classList.toggle('hidden', show);
+        }
+
+        function clearStoredTokens() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('merchant_phone');
+            document.getElementById('token-val').innerText = '...';
+            document.getElementById('refresh-token-val').innerText = '...';
+            document.getElementById('phone-target').innerText = '';
+            setTokenStatus('Token belum divalidasi');
+        }
+
+        function forceLogout(message = null) {
+            stopPolling();
+            clearStoredTokens();
+            goToStep('login');
+            if (message) alert(message);
+        }
+
+        function handleLogout() {
+            forceLogout();
+        }
+
+        async function fetchSettings() {
+            setDashboardLoader(true);
+            try {
+                const merchant_phone = localStorage.getItem('merchant_phone') || document.getElementById('phone-target')?.innerText || '';
+                const res = await fetchJSON('/dashboard/settings/get-qr', 'POST', { merchant_phone });
+                const static_qr = res.static_qr || '';
+                renderSettingsPanel(static_qr);
+            } catch (e) {
+                alert('Gagal mengambil pengaturan');
+            }
+            setDashboardLoader(false);
+        }
+
+        function renderSettingsPanel(static_qr) {
+            const phone = localStorage.getItem('merchant_phone') || document.getElementById('phone-target')?.innerText || '';
+            const html = `
+                <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm animate-fadeIn p-6 space-y-6">
+                    <div class="flex items-center gap-3 border-b border-slate-50 pb-4 bg-gradient-to-r from-slate-50/50 to-emerald-50/50 -mx-6 px-6">
+                        <div class="w-8 h-8 bg-slate-900 rounded-xl flex items-center justify-center">
+                            <i data-lucide="settings" class="w-4 h-4 text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-[9px] font-black text-slate-800 uppercase tracking-widest">Merchant Settings</h4>
+                            <p class="text-[8px] text-slate-400 font-bold">Simpan QRIS Statis untuk otomatisasi API</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Nomor Merchant</span>
+                            <span class="text-xs font-bold text-slate-800 bg-slate-50 px-3 py-2 rounded-xl block w-fit">${phone}</span>
+                        </div>
+
+                        <div class="space-y-2">
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Upload / Scan QRIS Statis</span>
+                            <div id="settings-drop-zone" onclick="document.getElementById('settings-qr-file').click()" class="relative group cursor-pointer border-2 border-dashed border-slate-200 bg-slate-50 rounded-xl p-6 transition-all hover:border-emerald-500 flex flex-col items-center justify-center gap-2">
+                                <input type="file" id="settings-qr-file" class="hidden" accept="image/*" onchange="handleSettingsFileSelect(event)">
+                                <div class="text-center py-2" id="settings-drop-zone-content">
+                                    <i data-lucide="image-plus" class="w-6 h-6 text-slate-400 mx-auto mb-1 group-hover:text-emerald-500"></i>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase group-hover:text-emerald-600">Drop static QR here or Click</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Static QR String</span>
+                            <textarea id="settings-qr-string" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-[10px] font-mono h-24 outline-none resize-none focus:border-emerald-500" placeholder="000201010212...">${static_qr}</textarea>
+                        </div>
+
+                        <button onclick="saveSettings()" id="save-settings-btn" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-emerald-50 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            <span>Simpan Pengaturan</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('dashboard-view').innerHTML = html;
+            lucide.createIcons();
+
+            // Set up drag and drop
+            const drop = document.getElementById('settings-drop-zone');
+            if (drop) {
+                drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('drop-zone--over'); };
+                drop.ondragleave = () => drop.classList.remove('drop-zone--over');
+                drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove('drop-zone--over'); handleSettingsFileSelect(e); };
+            }
+        }
+
+        function handleSettingsFileSelect(e) {
+            const files = e.target.files || e.dataTransfer.files;
+            if (!files[0]) return;
+            const file = files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    if (code) {
+                        document.getElementById('settings-qr-string').value = code.data;
+                        document.getElementById('settings-drop-zone-content').innerHTML = `
+                            <i data-lucide="check-circle" class="w-6 h-6 text-emerald-500 mx-auto mb-1"></i>
+                            <p class="text-[9px] font-black text-emerald-600 uppercase">QR Scanned Successfully</p>
+                        `;
+                        lucide.createIcons();
+                    } else {
+                        alert("Tidak dapat membaca QR dari gambar ini.");
+                    }
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function saveSettings() {
+            const static_qr = document.getElementById('settings-qr-string').value.trim();
+            const merchant_phone = localStorage.getItem('merchant_phone') || document.getElementById('phone-target')?.innerText || '';
+            if (!static_qr) return alert('Silakan isi QR string terlebih dahulu');
+            if (!merchant_phone) return alert('Sesi login tidak valid. Silakan logout dan login ulang.');
+            
+            const btn = document.getElementById('save-settings-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="animate-spin rounded-full h-4 w-4 border-2 border-white/20 border-t-white"></span>';
+            
+            try {
+                const res = await fetchJSON('/dashboard/settings/save-qr', 'POST', { merchant_phone, static_qr });
+                if (res.success) {
+                    alert('QRIS Statis berhasil disimpan!');
+                    fetchSettings();
+                } else {
+                    alert(res.error || 'Gagal menyimpan pengaturan');
+                }
+            } catch (e) {
+                alert('Network Error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i><span>Simpan Pengaturan</span>';
+                lucide.createIcons();
+            }
+        }
+
+        window.onload = async () => {
+            const t = localStorage.getItem('access_token');
+            const r = localStorage.getItem('refresh_token');
+            const cachedPhone = localStorage.getItem('merchant_phone');
+            if (cachedPhone) {
+                document.getElementById('phone-target').innerText = cachedPhone;
+                // Strip +62 prefix for the input display if needed
+                document.getElementById('phone-input').value = cachedPhone.replace('+62', '');
+            }
+            if(t) {
+                saveTokens(t, r);
+                goToStep('dashboard');
+                await validateCurrentSession();
+            }
+        }
+    </script>
+</body>
+</html>

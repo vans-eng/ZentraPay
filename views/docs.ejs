@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation — ZentraPay</title>
+    <meta name="description" content="ZentraPay API Documentation. Integrate QRIS payment gateway into your bot or web application. (https://ZentraPay.my.id)">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --border: #E2E8F0;
+            --border-light: #F1F5F9;
+            --text: #0F172A;
+            --text-secondary: #64748B;
+            --text-muted: #94A3B8;
+            --code-bg: #0F172A;
+            --code-text: #E2E8F0;
+            --accent: #10B981;
+            --accent-glow: rgba(16, 185, 129, 0.15);
+            --post-bg: #3B82F6;
+            --get-bg: #10B981;
+        }
+
+        .dark {
+            --bg: #0B0F19;
+            --card: #111827;
+            --border: #1E293B;
+            --border-light: #1E293B;
+            --text: #F1F5F9;
+            --text-secondary: #94A3B8;
+            --text-muted: #475569;
+            --code-bg: #020617;
+            --code-text: #E2E8F0;
+            --accent: #10B981;
+            --accent-glow: rgba(16, 185, 129, 0.1);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        code, pre, .mono { font-family: 'JetBrains Mono', monospace; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .doc-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            transition: all 0.3s;
+        }
+        .doc-card:hover { box-shadow: 0 8px 40px -12px rgba(0,0,0,0.1); }
+
+        .code-block {
+            background: var(--code-bg);
+            color: var(--code-text);
+            border-radius: 1rem;
+            overflow: hidden;
+            position: relative;
+        }
+        .code-block pre {
+            padding: 1.25rem;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+        .code-block .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #94A3B8;
+            padding: 0.35rem 0.6rem;
+            border-radius: 0.5rem;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .code-block .copy-btn:hover { background: rgba(255,255,255,0.15); color: #E2E8F0; }
+
+        .method-badge {
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            padding: 0.35rem 0.75rem;
+            border-radius: 0.5rem;
+            text-transform: uppercase;
+        }
+        .method-post { background: #DBEAFE; color: #2563EB; }
+        .method-get { background: #D1FAE5; color: #059669; }
+        .dark .method-post { background: rgba(59,130,246,0.15); color: #60A5FA; }
+        .dark .method-get { background: rgba(16,185,129,0.15); color: #34D399; }
+
+        .param-table { width: 100%; border-collapse: collapse; }
+        .param-table th {
+            text-align: left;
+            font-size: 8px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .param-table td {
+            padding: 0.75rem 1rem;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: top;
+        }
+        .param-table tr:last-child td { border-bottom: none; }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.75rem;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .sidebar-link:hover { background: var(--accent-glow); color: var(--accent); }
+        .sidebar-link.active { background: var(--accent-glow); color: var(--accent); }
+
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+
+        .json-key { color: #7DD3FC; }
+        .json-str { color: #86EFAC; }
+        .json-num { color: #FDE68A; }
+        .json-bool { color: #C4B5FD; }
+        .json-null { color: #94A3B8; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: fadeInUp 0.5s ease-out; }
+
+        .hero-glow {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .nav-doc {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="nav-doc sticky top-0 z-50 w-full">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 bg-slate-900 dark:bg-emerald-600 rounded-lg flex items-center justify-center">
+                    <i data-lucide="zap" class="w-4 h-4 text-emerald-400 dark:text-white fill-emerald-400 dark:fill-white"></i>
+                </div>
+                <span class="font-extrabold text-base tracking-tight">Zentra<span class="text-emerald-600">Pay</span></span>
+                <span class="ml-1 text-[8px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full uppercase tracking-widest">API Docs</span>
+            </a>
+            <div class="flex items-center gap-3">
+                <a href="https://t.me/fanzxystore" target="_blank" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-800 rounded-xl transition-all text-xs font-bold hover:bg-sky-100">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                    @fanzxystore
+                </a>
+                <a href="/" class="text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors flex items-center gap-1.5">
+                    <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+                    Dashboard
+                </a>
+                <button onclick="toggleDarkMode()" id="theme-toggle" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <i data-lucide="moon" class="w-4 h-4 dark:hidden"></i>
+                    <i data-lucide="sun" class="w-4 h-4 hidden dark:block text-amber-400"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 py-8 flex gap-8">
+
+        <!-- Sidebar -->
+        <aside class="hidden lg:block w-56 flex-shrink-0">
+            <div class="sticky top-24 space-y-1">
+                <p class="text-[8px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] mb-3 ml-3">Navigation</p>
+                <a href="#overview" class="sidebar-link active" onclick="setActive(this)">
+                    <i data-lucide="info" class="w-3.5 h-3.5"></i> Overview
+                </a>
+                <a href="#authentication" class="sidebar-link" onclick="setActive(this)">
+                    <i data-lucide="shield" class="w-3.5 h-3.5"></i> Authentication
+                </a>
+
+                <p class="text-[8px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] mt-6 mb-3 ml-3">Endpoints</p>
+                <a href="#create-deposit" class="sidebar-link" onclick="setActive(this)">
+                    <span class="status-dot bg-blue-500"></span> Create Deposit
+                </a>
+                <a href="#check-status" class="sidebar-link" onclick="setActive(this)">
+                    <span class="status-dot bg-blue-500"></span> Check Status
+                </a>
+                <a href="#cancel-deposit" class="sidebar-link" onclick="setActive(this)">
+                    <span class="status-dot bg-blue-500"></span> Cancel Deposit
+                </a>
+                <a href="#deposit-history" class="sidebar-link" onclick="setActive(this)">
+                    <span class="status-dot bg-blue-500"></span> Deposit History
+                </a>
+                <a href="#qr-image" class="sidebar-link" onclick="setActive(this)">
+                    <span class="status-dot bg-emerald-500"></span> QR Image
+                </a>
+
+                <p class="text-[8px] font-black text-[var(--text-muted)] uppercase tracking-[0.2em] mt-6 mb-3 ml-3">Reference</p>
+                <a href="#status-codes" class="sidebar-link" onclick="setActive(this)">
+                    <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Status Codes
+                </a>
+                <a href="#error-codes" class="sidebar-link" onclick="setActive(this)">
+                    <i data-lucide="x-circle" class="w-3.5 h-3.5"></i> Error Codes
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 min-w-0 space-y-8">
+
+            <!-- Hero / Overview -->
+            <section id="overview" class="doc-card p-8 md:p-10 relative overflow-hidden animate-in">
+                <div class="hero-glow -top-40 -right-40"></div>
+                <div class="relative">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-[9px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">v1.0 — Live</span>
+                    </div>
+                    <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">ZentraPay API</h1>
+                    <p class="text-[var(--text-secondary)] max-w-2xl leading-relaxed">
+                        Integrasikan pembayaran QRIS ke dalam bot Telegram, website, atau aplikasi Anda.
+                        Buat deposit, pantau status pembayaran secara real-time, dan kelola riwayat transaksi melalui API yang sederhana dan powerful.
+                    </p>
+                    <div class="flex flex-wrap items-center gap-3 mt-6">
+                        <div class="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-xl">
+                            <i data-lucide="globe" class="w-3.5 h-3.5 text-emerald-500"></i>
+                            <code class="text-xs font-bold mono text-[var(--text)]">https://ZentraPay.my.id</code>
+                        </div>
+                        <div class="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 px-4 py-2.5 rounded-xl">
+                            <i data-lucide="lock" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
+                            <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400">HTTPS Only</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 px-4 py-2.5 rounded-xl">
+                            <i data-lucide="code" class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400"></i>
+                            <span class="text-xs font-bold text-blue-700 dark:text-blue-400">JSON Response</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Authentication -->
+            <section id="authentication" class="doc-card p-8 animate-in">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-10 h-10 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center">
+                        <i data-lucide="key" class="w-5 h-5 text-amber-600 dark:text-amber-400"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-extrabold tracking-tight">Authentication</h2>
+                        <p class="text-xs text-[var(--text-muted)]">Semua request harus menyertakan API key</p>
+                    </div>
+                </div>
+                <p class="text-sm text-[var(--text-secondary)] mb-5 leading-relaxed">
+                    Setiap request ke API memerlukan header <code class="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs font-bold">x-api-key</code> yang berisi API key Anda.
+                    API key bisa dibuat dari <a href="/" class="text-emerald-600 font-bold underline underline-offset-4">Dashboard</a> setelah login.
+                </p>
+                <div class="code-block">
+                    <div class="flex items-center gap-2 px-4 py-2.5 border-b border-white/5">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span class="ml-2 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Header</span>
+                    </div>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre class="mono text-xs"><span class="json-key">x-api-key</span>: <span class="json-str">gm_your_api_key_here</span></pre>
+                </div>
+                <div class="mt-5 p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/30 rounded-xl">
+                    <div class="flex items-start gap-2">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0"></i>
+                        <p class="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                            <strong>Jangan bagikan API key Anda.</strong> Jika API key bocor, segera hapus dari dashboard dan buat yang baru.
+                            Token GoBiz merchant tersimpan di server dan otomatis di-refresh ketika expired.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- ENDPOINT 1: Create Deposit -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <section id="create-deposit" class="doc-card overflow-hidden animate-in">
+                <div class="p-8 border-b border-[var(--border)]">
+                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                        <span class="method-badge method-post">POST</span>
+                        <code class="text-sm font-bold mono text-[var(--text)]">/v1/deposit/create</code>
+                    </div>
+                    <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
+                        Buat deposit QRIS baru. Server akan menghasilkan QR code dinamis dari string QRIS statis yang Anda berikan.
+                        Deposit berlaku selama <strong>30 menit</strong> sebelum otomatis expired.
+                    </p>
+                </div>
+
+                <div class="p-8 border-b border-[var(--border)]">
+                    <h4 class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-4">Request Body</h4>
+                    <div class="overflow-x-auto">
+                        <table class="param-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Deskripsi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mono">amount</code></td>
+                                    <td><span class="text-xs text-[var(--text-muted)]">integer</span></td>
+                                    <td><span class="text-[9px] font-black text-rose-500 uppercase">Yes</span></td>
+                                    <td><span class="text-xs text-[var(--text-secondary)]">Nominal pembayaran dalam Rupiah (contoh: 50000)</span></td>
+                                </tr>
+                                <tr>
+                                    <td><code class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mono">static_qr</code></td>
+                                    <td><span class="text-xs text-[var(--text-muted)]">string</span></td>
+                                    <td><span class="text-[9px] font-black text-slate-400 uppercase">Optional</span></td>
+                                    <td><span class="text-xs text-[var(--text-secondary)]">String QRIS statis milik merchant Anda. <strong>Opsional</strong> jika QRIS Statis sudah disimpan melalui menu <strong>Settings</strong> di Dashboard.</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[var(--border)]">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Request Example</span>
+                        </div>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre class="mono text-[11px]">curl -X POST https://ZentraPay.my.id/v1/deposit/create \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: gm_your_api_key" \
+  -d '{
+    "amount": 50000,
+    "static_qr": "00020101021126670016..."
+  }'</pre>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Response — 200 OK</span>
+                        </div>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre class="mono text-[11px]">{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"deposit_id"</span>: <span class="json-str">"DEP-1717148400-A1B2C3D4"</span>,
+    <span class="json-key">"amount"</span>: <span class="json-num">50000</span>,
+    <span class="json-key">"qr_image_url"</span>: <span class="json-str">"https://ZentraPay.my.id/v1/qris/image/DEP-..."</span>,
+    <span class="json-key">"qr_string"</span>: <span class="json-str">"00020101021254..."</span>,
+    <span class="json-key">"status"</span>: <span class="json-str">"PENDING"</span>,
+    <span class="json-key">"created_at"</span>: <span class="json-str">"2026-05-31T10:00:00.000Z"</span>,
+    <span class="json-key">"expired_at"</span>: <span class="json-str">"2026-05-31T10:30:00.000Z"</span>
+  }
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- ENDPOINT 2: Check Status -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <section id="check-status" class="doc-card overflow-hidden animate-in">
+                <div class="p-8 border-b border-[var(--border)]">
+                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                        <span class="method-badge method-post">POST</span>
+                        <code class="text-sm font-bold mono text-[var(--text)]">/v1/deposit/status</code>
+                    </div>
+                    <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
+                        Cek status pembayaran deposit. Jika masih <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded text-xs">PENDING</code>,
+                        server akan secara real-time mengecek ke jurnal transaksi GoBiz untuk mencocokkan pembayaran.
+                    </p>
+                </div>
+
+                <div class="p-8 border-b border-[var(--border)]">
+                    <h4 class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-4">Request Body</h4>
+                    <div class="overflow-x-auto">
+                        <table class="param-table">
+                            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Deskripsi</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td><code class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mono">deposit_id</code></td>
+                                    <td><span class="text-xs text-[var(--text-muted)]">string</span></td>
+                                    <td><span class="text-[9px] font-black text-rose-500 uppercase">Yes</span></td>
+                                    <td><span class="text-xs text-[var(--text-secondary)]">ID deposit yang didapat dari create deposit</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[var(--border)]">
+                    <div class="p-6">
+                        <span class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest block mb-3">Request Example</span>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre class="mono text-[11px]">curl -X POST https://ZentraPay.my.id/v1/deposit/status \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: gm_your_api_key" \
+  -d '{
+    "deposit_id": "DEP-1717148400-A1B2C3D4"
+  }'</pre>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <span class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest block mb-3">Response — Paid</span>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre class="mono text-[11px]">{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"deposit_id"</span>: <span class="json-str">"DEP-1717148400-A1B2C3D4"</span>,
+    <span class="json-key">"amount"</span>: <span class="json-num">50000</span>,
+    <span class="json-key">"status"</span>: <span class="json-str">"PAID"</span>,
+    <span class="json-key">"created_at"</span>: <span class="json-str">"2026-05-31T10:00:00.000Z"</span>,
+    <span class="json-key">"paid_at"</span>: <span class="json-str">"2026-05-31T10:05:12.000Z"</span>,
+    <span class="json-key">"payment_data"</span>: {
+      <span class="json-key">"reference_id"</span>: <span class="json-str">"TXN-..."</span>,
+      <span class="json-key">"payment_type"</span>: <span class="json-str">"qris"</span>
+    }
+  }
+}</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-slate-50 dark:bg-slate-800/30 border-t border-[var(--border)]">
+                    <h4 class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-3">Possible Status Values</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="inline-flex items-center gap-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span> PENDING
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> PAID
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span> EXPIRED
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> CANCELLED
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- ENDPOINT 3: Cancel Deposit -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <section id="cancel-deposit" class="doc-card overflow-hidden animate-in">
+                <div class="p-8 border-b border-[var(--border)]">
+                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                        <span class="method-badge method-post">POST</span>
+                        <code class="text-sm font-bold mono text-[var(--text)]">/v1/deposit/cancel</code>
+                    </div>
+                    <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
+                        Batalkan deposit yang masih berstatus <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded text-xs">PENDING</code>.
+                        Deposit yang sudah <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded text-xs">PAID</code>, <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded text-xs">EXPIRED</code>, atau <code class="bg-slate-100 dark:bg-slate-800 px-1 rounded text-xs">CANCELLED</code> tidak bisa dibatalkan.
+                    </p>
+                </div>
+
+                <div class="p-8 border-b border-[var(--border)]">
+                    <h4 class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-4">Request Body</h4>
+                    <div class="overflow-x-auto">
+                        <table class="param-table">
+                            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Deskripsi</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td><code class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mono">deposit_id</code></td>
+                                    <td><span class="text-xs text-[var(--text-muted)]">string</span></td>
+                                    <td><span class="text-[9px] font-black text-rose-500 uppercase">Yes</span></td>
+                                    <td><span class="text-xs text-[var(--text-secondary)]">ID deposit yang ingin dibatalkan</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[var(--border)]">
+                    <div class="p-6">
+                        <span class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest block mb-3">Request Example</span>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre class="mono text-[11px]">curl -X POST https://ZentraPay.my.id/v1/deposit/cancel \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: gm_your_api_key" \
+  -d '{
+    "deposit_id": "DEP-1717148400-A1B2C3D4"
+  }'</pre>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <span class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest block mb-3">Response — 200 OK</span>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre class="mono text-[11px]">{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"deposit_id"</span>: <span class="json-str">"DEP-1717148400-A1B2C3D4"</span>,
+    <span class="json-key">"amount"</span>: <span class="json-num">50000</span>,
+    <span class="json-key">"status"</span>: <span class="json-str">"CANCELLED"</span>,
+    <span class="json-key">"cancelled_at"</span>: <span class="json-str">"2026-05-31T10:03:45.000Z"</span>
+  }
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- ENDPOINT 4: Deposit History -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <section id="deposit-history" class="doc-card overflow-hidden animate-in">
+                <div class="p-8 border-b border-[var(--border)]">
+                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                        <span class="method-badge method-post">POST</span>
+                        <code class="text-sm font-bold mono text-[var(--text)]">/v1/deposit/history</code>
+                    </div>
+                    <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
+                        Ambil riwayat semua deposit yang dibuat menggunakan API key Anda.
+                        Bisa difilter berdasarkan status dan dibatasi jumlahnya.
+                    </p>
+                </div>
+
+                <div class="p-8 border-b border-[var(--border)]">
+                    <h4 class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-4">Request Body</h4>
+                    <div class="overflow-x-auto">
+                        <table class="param-table">
+                            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Deskripsi</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td><code class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mono">limit</code></td>
+                                    <td><span class="text-xs text-[var(--text-muted)]">integer</span></td>
+                                    <td><span class="text-[9px] font-black text-slate-400 uppercase">No</span></td>
+                                    <td><span class="text-xs text-[var(--text-secondary)]">Jumlah maksimal data (default: 50, max: 100)</span></td>
+                                </tr>
+                                <tr>
+                                    <td><code class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mono">status</code></td>
+                                    <td><span class="text-xs text-[var(--text-muted)]">string</span></td>
+                                    <td><span class="text-[9px] font-black text-slate-400 uppercase">No</span></td>
+                                    <td><span class="text-xs text-[var(--text-secondary)]">Filter status: PENDING, PAID, EXPIRED, CANCELLED</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[var(--border)]">
+                    <div class="p-6">
+                        <span class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest block mb-3">Request Example</span>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre class="mono text-[11px]">curl -X POST https://ZentraPay.my.id/v1/deposit/history \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: gm_your_api_key" \
+  -d '{
+    "limit": 10,
+    "status": "PAID"
+  }'</pre>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <span class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest block mb-3">Response — 200 OK</span>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre class="mono text-[11px]">{
+  <span class="json-key">"success"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"data"</span>: {
+    <span class="json-key">"total"</span>: <span class="json-num">2</span>,
+    <span class="json-key">"deposits"</span>: [
+      {
+        <span class="json-key">"deposit_id"</span>: <span class="json-str">"DEP-..."</span>,
+        <span class="json-key">"amount"</span>: <span class="json-num">50000</span>,
+        <span class="json-key">"status"</span>: <span class="json-str">"PAID"</span>,
+        <span class="json-key">"created_at"</span>: <span class="json-str">"..."</span>,
+        <span class="json-key">"paid_at"</span>: <span class="json-str">"..."</span>
+      }
+    ]
+  }
+}</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- ENDPOINT 5: QR Image -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <section id="qr-image" class="doc-card overflow-hidden animate-in">
+                <div class="p-8 border-b border-[var(--border)]">
+                    <div class="flex flex-wrap items-center gap-3 mb-4">
+                        <span class="method-badge method-get">GET</span>
+                        <code class="text-sm font-bold mono text-[var(--text)]">/v1/qris/image/:deposit_id</code>
+                    </div>
+                    <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
+                        Ambil gambar QR code dari deposit. Endpoint ini <strong>tidak memerlukan API key</strong> sehingga bisa langsung
+                        di-embed di halaman web atau dikirim sebagai gambar di bot.
+                    </p>
+                </div>
+
+                <div class="p-8 border-b border-[var(--border)]">
+                    <h4 class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest mb-4">URL Parameters</h4>
+                    <div class="overflow-x-auto">
+                        <table class="param-table">
+                            <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Deskripsi</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td><code class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mono">deposit_id</code></td>
+                                    <td><span class="text-xs text-[var(--text-muted)]">string</span></td>
+                                    <td><span class="text-[9px] font-black text-rose-500 uppercase">Yes</span></td>
+                                    <td><span class="text-xs text-[var(--text-secondary)]">ID deposit (bagian dari URL path)</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <span class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest block mb-3">Usage Example</span>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre class="mono text-[11px]"><span class="json-key">&lt;!-- Embed di HTML --&gt;</span>
+&lt;img src="https://ZentraPay.my.id/v1/qris/image/DEP-1717148400-A1B2C3D4" /&gt;
+
+<span class="json-key"># Download via curl</span>
+curl -o qris.png https://ZentraPay.my.id/v1/qris/image/DEP-1717148400-A1B2C3D4</pre>
+                    </div>
+                    <div class="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30 rounded-xl">
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="info" class="w-4 h-4 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                            <p class="text-xs text-emerald-800 dark:text-emerald-300 leading-relaxed">
+                                Response berupa file <strong>image/png</strong> (bukan JSON). Cocok untuk langsung di-embed sebagai <code>&lt;img&gt;</code> tag atau dikirim sebagai photo di bot Telegram.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- Status Codes -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <section id="status-codes" class="doc-card p-8 animate-in">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+                        <i data-lucide="list-checks" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <h2 class="text-xl font-extrabold tracking-tight">HTTP Status Codes</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="param-table">
+                        <thead><tr><th>Code</th><th>Status</th><th>Deskripsi</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 rounded text-xs font-black text-emerald-600 dark:text-emerald-400">200</span></td>
+                                <td><span class="text-xs font-bold">OK</span></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">Request berhasil</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-50 dark:bg-amber-900/20 rounded text-xs font-black text-amber-600 dark:text-amber-400">400</span></td>
+                                <td><span class="text-xs font-bold">Bad Request</span></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">Parameter tidak lengkap atau tidak valid</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-rose-50 dark:bg-rose-900/20 rounded text-xs font-black text-rose-600 dark:text-rose-400">401</span></td>
+                                <td><span class="text-xs font-bold">Unauthorized</span></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">API key tidak valid atau expired</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-orange-50 dark:bg-orange-900/20 rounded text-xs font-black text-orange-600 dark:text-orange-400">403</span></td>
+                                <td><span class="text-xs font-bold">Forbidden</span></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">Tidak punya akses ke resource ini</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 dark:bg-slate-700/50 rounded text-xs font-black text-slate-600 dark:text-slate-400">404</span></td>
+                                <td><span class="text-xs font-bold">Not Found</span></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">Deposit tidak ditemukan</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-red-50 dark:bg-red-900/20 rounded text-xs font-black text-red-600 dark:text-red-400">500</span></td>
+                                <td><span class="text-xs font-bold">Server Error</span></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">Kesalahan internal server</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- Error Codes -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <section id="error-codes" class="doc-card p-8 animate-in">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-10 h-10 bg-rose-50 dark:bg-rose-900/20 rounded-xl flex items-center justify-center">
+                        <i data-lucide="x-circle" class="w-5 h-5 text-rose-600 dark:text-rose-400"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-extrabold tracking-tight">Error Codes</h2>
+                        <p class="text-xs text-[var(--text-muted)]">Kode error dalam field "code" pada response</p>
+                    </div>
+                </div>
+                <div class="code-block mb-5">
+                    <pre class="mono text-[11px]"><span class="json-key">// Error response format</span>
+{
+  <span class="json-key">"success"</span>: <span class="json-bool">false</span>,
+  <span class="json-key">"error"</span>: <span class="json-str">"Deskripsi error"</span>,
+  <span class="json-key">"code"</span>: <span class="json-str">"ERROR_CODE"</span>
+}</pre>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="param-table">
+                        <thead><tr><th>Code</th><th>Deskripsi</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><code class="text-[10px] font-bold text-rose-600 dark:text-rose-400 mono">MISSING_API_KEY</code></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">Header x-api-key tidak ditemukan</span></td>
+                            </tr>
+                            <tr>
+                                <td><code class="text-[10px] font-bold text-rose-600 dark:text-rose-400 mono">INVALID_API_KEY</code></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">API key tidak valid atau tidak terdaftar</span></td>
+                            </tr>
+                            <tr>
+                                <td><code class="text-[10px] font-bold text-rose-600 dark:text-rose-400 mono">TOKEN_EXPIRED</code></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">Token merchant expired, perlu regenerate API key</span></td>
+                            </tr>
+                            <tr>
+                                <td><code class="text-[10px] font-bold text-rose-600 dark:text-rose-400 mono">MISSING_PARAMS</code></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">Parameter wajib tidak lengkap</span></td>
+                            </tr>
+                            <tr>
+                                <td><code class="text-[10px] font-bold text-rose-600 dark:text-rose-400 mono">INVALID_AMOUNT</code></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">Nominal tidak valid (harus angka positif)</span></td>
+                            </tr>
+                            <tr>
+                                <td><code class="text-[10px] font-bold text-rose-600 dark:text-rose-400 mono">NOT_FOUND</code></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">Deposit tidak ditemukan</span></td>
+                            </tr>
+                            <tr>
+                                <td><code class="text-[10px] font-bold text-rose-600 dark:text-rose-400 mono">FORBIDDEN</code></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">Tidak punya akses ke deposit milik API key lain</span></td>
+                            </tr>
+                            <tr>
+                                <td><code class="text-[10px] font-bold text-rose-600 dark:text-rose-400 mono">CANNOT_CANCEL</code></td>
+                                <td><span class="text-xs text-[var(--text-secondary)]">Deposit sudah PAID/EXPIRED/CANCELLED, tidak bisa dibatalkan</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="text-center py-10">
+                <div class="flex items-center justify-center gap-2 mb-2">
+                    <div class="w-6 h-6 bg-slate-900 dark:bg-emerald-600 rounded-lg flex items-center justify-center">
+                        <i data-lucide="zap" class="w-3 h-3 text-emerald-400 dark:text-white fill-emerald-400 dark:fill-white"></i>
+                    </div>
+                    <span class="text-sm font-extrabold">Zentra<span class="text-emerald-600">Pay</span></span>
+                </div>
+                <p class="text-xs text-[var(--text-muted)] font-bold">QRIS Payment Gateway API &mdash; <a href="https://ZentraPay.my.id" target="_blank" class="text-emerald-600 dark:text-emerald-400 hover:underline">ZentraPay.my.id</a></p>
+                <p class="text-xs text-[var(--text-muted)] mt-1">Official Support & Developer: <a href="https://t.me/fanzxystore" target="_blank" class="text-sky-500 hover:underline font-semibold">@fanzxystore</a></p>
+            </footer>
+
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // ─── Dark Mode ──────────────────────────────────
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('docs-theme', isDark ? 'dark' : 'light');
+        }
+
+        // Load saved theme
+        if (localStorage.getItem('docs-theme') === 'dark' || (!localStorage.getItem('docs-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+
+        // ─── Sidebar Active Link ────────────────────────
+        function setActive(el) {
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        // Auto-highlight sidebar on scroll
+        const sections = document.querySelectorAll('section[id]');
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 120;
+                if (scrollY >= sectionTop) current = section.getAttribute('id');
+            });
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+            });
+        });
+
+        // ─── Copy Code ──────────────────────────────────
+        function copyCode(btn) {
+            const pre = btn.parentElement.querySelector('pre');
+            const text = pre.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                btn.innerText = 'Copied!';
+                btn.style.color = '#10B981';
+                setTimeout(() => { btn.innerText = 'Copy'; btn.style.color = ''; }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

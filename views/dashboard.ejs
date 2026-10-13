@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard — ZentraPay</title>
+    <meta name="description" content="ZentraPay Merchant Dashboard - Manage GoPay & QRIS (https://ZentraPay.my.id)">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --glass: rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.08);
+            --glass-strong: rgba(255,255,255,0.08);
+            --glass-hover: rgba(255,255,255,0.1);
+            --accent: #10b981;
+            --accent-glow: rgba(16,185,129,0.2);
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --text: #f1f5f9;
+            --text-sec: #94a3b8;
+            --text-dim: #64748b;
+            --text-muted: #475569;
+            --radius: 1rem;
+            --radius-lg: 1.25rem;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #0a0e1a;
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 5rem;
+        }
+
+        .bg-mesh {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse at 15% 30%, rgba(16,185,129,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 85% 15%, rgba(59,130,246,0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 85%, rgba(139,92,246,0.04) 0%, transparent 50%);
+        }
+
+        /* ─── Top Nav ─────────────────────────────────────── */
+        .topnav {
+            position: sticky; top: 0; z-index: 50;
+            background: rgba(10,14,26,0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 0 1.25rem; height: 3.5rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-left { display: flex; align-items: center; gap: 0.5rem; }
+        .nav-logo {
+            width: 30px; height: 30px; background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 0.5rem; display: flex; align-items: center; justify-content: center;
+            font-size: 0.875rem;
+        }
+        .nav-title { font-size: 0.9375rem; font-weight: 800; }
+        .nav-title span { color: var(--accent); }
+        .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+        .nav-user {
+            font-size: 0.75rem; font-weight: 600; color: var(--text-sec);
+            display: none;
+        }
+        @media (min-width: 640px) { .nav-user { display: block; } }
+        .btn-logout {
+            padding: 0.375rem 0.75rem; background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.15); border-radius: 0.5rem;
+            color: #fca5a5; font-size: 0.6875rem; font-weight: 700;
+            cursor: pointer; font-family: inherit; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: rgba(239,68,68,0.2); }
+
+        /* ─── Bottom Nav ──────────────────────────────────── */
+        .bottomnav {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+            background: rgba(10,14,26,0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-top: 1px solid var(--glass-border);
+            display: flex; justify-content: space-around;
+            padding: 0.375rem 0 calc(0.375rem + env(safe-area-inset-bottom));
+        }
+        .nav-tab {
+            display: flex; flex-direction: column; align-items: center; gap: 0.125rem;
+            padding: 0.375rem 0.75rem; border-radius: 0.75rem;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-muted); transition: all 0.2s;
+            font-family: inherit;
+        }
+        .nav-tab i { width: 20px; height: 20px; }
+        .nav-tab span { font-size: 0.5625rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+        .nav-tab.active { color: var(--accent); background: var(--accent-glow); }
+        .nav-tab:hover { color: var(--text-sec); }
+
+        /* ─── Main Content ────────────────────────────────── */
+        .main { max-width: 640px; margin: 0 auto; padding: 1.25rem; position: relative; z-index: 1; }
+
+        .section { display: none; animation: fadeIn 0.3s ease-out; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .section-title {
+            font-size: 1.25rem; font-weight: 800; margin-bottom: 1rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .section-title i { width: 22px; height: 22px; color: var(--accent); }
+
+        /* ─── Glass Card ──────────────────────────────────── */
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        .glass-sm { padding: 1rem; border-radius: var(--radius); }
+
+        /* ─── Stat Cards ──────────────────────────────────── */
+        .stats-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .stat-card {
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+        .stat-label { font-size: 0.6875rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 0.25rem; }
+
+        /* ─── Form Elements ───────────────────────────────── */
+        .form-group { margin-bottom: 1rem; }
+        .form-label {
+            display: block; font-size: 0.75rem; font-weight: 600;
+            color: var(--text-sec); margin-bottom: 0.375rem;
+        }
+        .form-input, .form-select {
+            width: 100%; padding: 0.75rem 0.875rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.75rem; color: var(--text);
+            font-size: 0.875rem; font-family: inherit;
+            transition: all 0.2s; outline: none;
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: rgba(16,185,129,0.5);
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+        }
+        .form-input::placeholder { color: var(--text-muted); }
+        .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.875rem center; padding-right: 2.5rem; }
+        .form-select option { background: #1e293b; color: var(--text); }
+
+        .form-row { display: flex; gap: 0.75rem; }
+        .form-row > * { flex: 1; }
+
+        /* ─── Buttons ─────────────────────────────────────── */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem;
+            padding: 0.75rem 1.25rem; border-radius: 0.75rem;
+            font-size: 0.8125rem; font-weight: 700;
+            cursor: pointer; transition: all 0.2s;
+            border: none; font-family: inherit; outline: none;
+        }
+        .btn i { width: 16px; height: 16px; }
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.25);
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.35); }
+        .btn-ghost {
+            background: var(--glass); color: var(--text-sec);
+            border: 1px solid var(--glass-border);
+        }
+        .btn-ghost:hover { background: var(--glass-hover); color: var(--text); }
+        .btn-danger {
+            background: rgba(239,68,68,0.12); color: #fca5a5;
+            border: 1px solid rgba(239,68,68,0.15);
+        }
+        .btn-danger:hover { background: rgba(239,68,68,0.2); }
+        .btn-sm { padding: 0.5rem 0.875rem; font-size: 0.75rem; }
+        .btn-block { width: 100%; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        /* ─── Badges ──────────────────────────────────────── */
+        .badge {
+            display: inline-flex; align-items: center; padding: 0.2rem 0.5rem;
+            border-radius: 9999px; font-size: 0.625rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .badge-success { background: rgba(16,185,129,0.15); color: #34d399; }
+        .badge-warning { background: rgba(245,158,11,0.15); color: #fbbf24; }
+        .badge-danger { background: rgba(239,68,68,0.15); color: #fca5a5; }
+        .badge-info { background: rgba(59,130,246,0.15); color: #60a5fa; }
+
+        /* ─── Alert ───────────────────────────────────────── */
+        .alert {
+            padding: 0.625rem 0.875rem; border-radius: 0.75rem;
+            font-size: 0.75rem; font-weight: 500;
+            margin-bottom: 1rem; display: none;
+            animation: slideDown 0.25s ease-out;
+        }
+        .alert-error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.2); color: #fca5a5; }
+        .alert-success { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.2); color: #6ee7b7; }
+        .alert-info { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.2); color: #93c5fd; }
+        @keyframes slideDown { from { opacity:0; transform: translateY(-6px); } to { opacity:1; transform: translateY(0); } }
+
+        /* ─── Account / Item Cards ────────────────────────── */
+        .item-card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 0.875rem;
+            margin-bottom: 0.625rem;
+            transition: all 0.2s;
+        }
+        .item-card:hover { background: var(--glass-hover); }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+        .item-title { font-size: 0.875rem; font-weight: 700; }
+        .item-meta { font-size: 0.6875rem; color: var(--text-dim); margin-top: 0.25rem; }
+        .item-actions { display: flex; gap: 0.375rem; flex-wrap: wrap; margin-top: 0.625rem; }
+
+        /* ─── Mono / Code ─────────────────────────────────── */
+        .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; }
+        .code-block {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.5rem;
+            padding: 0.625rem 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            color: var(--text-sec);
+            word-break: break-all;
+            position: relative;
+        }
+
+        /* ─── QR Display ──────────────────────────────────── */
+        .qr-display {
+            text-align: center; padding: 1.5rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            margin: 1rem 0;
+        }
+        .qr-display img {
+            max-width: 240px; width: 100%;
+            border-radius: 0.75rem;
+            background: white; padding: 0.75rem;
+        }
+
+        /* ─── Empty State ─────────────────────────────────── */
+        .empty-state {
+            text-align: center; padding: 2rem 1rem;
+            color: var(--text-dim);
+        }
+        .empty-state i { width: 40px; height: 40px; margin-bottom: 0.75rem; opacity: 0.4; }
+        .empty-state p { font-size: 0.8125rem; }
+
+        /* ─── Modal ───────────────────────────────────────── */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 100;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            align-items: flex-end; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease-out; }
+        @media (min-width: 640px) { .modal-overlay.active { align-items: center; } }
+        .modal-content {
+            width: 100%; max-width: 440px;
+            background: #111827;
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem 1.5rem 0 0;
+            padding: 1.5rem;
+            max-height: 90vh; overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+        @media (min-width: 640px) { .modal-content { border-radius: 1.5rem; } }
+        @keyframes slideUp { from { opacity:0; transform: translateY(24px); } to { opacity:1; transform: translateY(0); } }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.25rem;
+        }
+        .modal-title { font-size: 1.0625rem; font-weight: 800; }
+        .modal-close {
+            width: 32px; height: 32px; background: var(--glass);
+            border: 1px solid var(--glass-border); border-radius: 0.5rem;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-dim); transition: all 0.2s;
+        }
+        .modal-close:hover { background: var(--glass-hover); color: var(--text); }
+
+        /* ─── Deposit Table ───────────────────────────────── */
+        .deposit-list { }
+        .deposit-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.75rem; border-radius: 0.75rem;
+            background: var(--glass); border: 1px solid var(--glass-border);
+            margin-bottom: 0.5rem;
+        }
+        .deposit-info { flex: 1; min-width: 0; }
+        .deposit-id { font-family: 'JetBrains Mono', monospace; font-size: 0.6875rem; color: var(--text-sec); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .deposit-amount { font-size: 0.875rem; font-weight: 700; margin-top: 0.125rem; }
+        .deposit-time { font-size: 0.625rem; color: var(--text-muted); margin-top: 0.125rem; }
+
+        /* ─── Spinner ─────────────────────────────────────── */
+        .spinner {
+            display: inline-block; width: 14px; height: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-top-color: white; border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 0.375rem; vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── File Input ──────────────────────────────────── */
+        .file-drop {
+            border: 2px dashed var(--glass-border); border-radius: 0.75rem;
+            padding: 1.25rem; text-align: center; cursor: pointer;
+            transition: all 0.2s; color: var(--text-dim);
+            font-size: 0.75rem;
+        }
+        .file-drop:hover, .file-drop.dragover {
+            border-color: var(--accent); background: rgba(16,185,129,0.05);
+            color: var(--accent);
+        }
+        .file-drop input { display: none; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+    </style>
+</head>
+<body>
+    <div class="bg-mesh"></div>
+
+    <!-- ─── Top Navigation ────────────────────────────────── -->
+    <nav class="topnav">
+        <div class="nav-left">
+            <div class="nav-logo">⚡</div>
+            <div class="nav-title">Zentra<span>Pay</span></div>
+        </div>
+        <div class="nav-right">
+            <a href="/docs" target="_blank" style="color:var(--text-sec);text-decoration:none;font-size:0.75rem;font-weight:600;display:flex;align-items:center;gap:0.35rem;padding:0.3rem 0.6rem;background:var(--glass);border:1px solid var(--glass-border);border-radius:0.5rem;">
+                <i data-lucide="book-open" style="width:14px;height:14px"></i> Docs
+            </a>
+            <a href="https://t.me/fanzxystore" target="_blank" style="color:#38bdf8;text-decoration:none;font-size:0.75rem;font-weight:600;display:flex;align-items:center;gap:0.35rem;padding:0.3rem 0.6rem;background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:0.5rem;">
+                <i data-lucide="send" style="width:14px;height:14px"></i> @fanzxystore
+            </a>
+            <span class="nav-user">👤 <%= user.username %></span>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <!-- ─── Main Content ──────────────────────────────────── -->
+    <main class="main">
+
+        <!-- ═══ OVERVIEW SECTION ══════════════════════════════ -->
+        <div id="sec-home" class="section active">
+            <!-- Portal Info Banner -->
+            <div class="glass" style="margin-bottom:1rem;background:linear-gradient(135deg, rgba(16,185,129,0.08), rgba(56,189,248,0.05));border-color:rgba(16,185,129,0.2);">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+                    <div>
+                        <div style="font-size:0.6875rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;display:flex;align-items:center;gap:0.35rem;">
+                            <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;animation:pulse 2s infinite;"></span>
+                            ZentraPay Gateway Portal
+                        </div>
+                        <div style="font-size:1.125rem;font-weight:800;margin-top:0.25rem;">
+                            <a href="https://ZentraPay.my.id" target="_blank" style="color:var(--text);text-decoration:none;">https://ZentraPay.my.id</a>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;align-items:center;">
+                        <a href="https://t.me/fanzxystore" target="_blank" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.4rem 0.75rem;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);border-radius:0.6rem;color:#7dd3fc;text-decoration:none;font-size:0.75rem;font-weight:700;">
+                            <i data-lucide="message-circle" style="width:14px;height:14px"></i>
+                            Telegram: @fanzxystore
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title"><i data-lucide="layout-dashboard"></i> Dashboard</h2>
+
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card"><div class="stat-value" id="stat-accounts">-</div><div class="stat-label">GoPay Linked</div></div>
+                <div class="stat-card"><div class="stat-value" id="stat-deposits">-</div><div class="stat-label">Total Deposit</div></div>
+                <div class="stat-card"><div class="stat-value" id="stat-paid">-</div><div class="stat-label">Paid</div></div>
+                <div class="stat-card"><div class="stat-value" id="stat-revenue">-</div><div class="stat-label">Revenue</div></div>
+            </div>
+
+            <div class="glass">
+                <h3 style="font-size:0.875rem;font-weight:700;margin-bottom:0.75rem">🚀 Quick Actions</h3>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                    <button class="btn btn-primary btn-sm" onclick="switchTab('gopay')"><i data-lucide="smartphone"></i> Link GoPay</button>
+                    <button class="btn btn-ghost btn-sm" onclick="switchTab('qris')"><i data-lucide="qr-code"></i> Generate QRIS</button>
+                    <button class="btn btn-ghost btn-sm" onclick="switchTab('history')"><i data-lucide="clock"></i> History</button>
+                </div>
+            </div>
+
+            <div class="glass">
+                <h3 style="font-size:0.875rem;font-weight:700;margin-bottom:0.75rem">📋 Recent Deposits</h3>
+                <div id="recent-deposits"><div class="empty-state"><p>Belum ada deposit</p></div></div>
+            </div>
+        </div>
+
+        <!-- ═══ GOPAY SECTION ═════════════════════════════════ -->
+        <div id="sec-gopay" class="section">
+            <h2 class="section-title"><i data-lucide="smartphone"></i> GoPay Accounts</h2>
+
+            <div id="alert-gopay" class="alert"></div>
+            <div id="gopay-accounts-list"></div>
+
+            <button class="btn btn-primary btn-block" onclick="openLinkModal()">
+                <i data-lucide="plus-circle"></i> Hubungkan Akun GoPay
+            </button>
+        </div>
+
+        <!-- ═══ QRIS SECTION ══════════════════════════════════ -->
+        <div id="sec-qris" class="section">
+            <h2 class="section-title"><i data-lucide="qr-code"></i> Generate QRIS</h2>
+
+            <div id="alert-qris" class="alert"></div>
+
+            <div class="glass">
+                <div class="form-group">
+                    <label class="form-label">Pilih Akun GoPay</label>
+                    <select class="form-select" id="qris-account"><option value="">Memuat akun...</option></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nominal (Rp)</label>
+                    <input class="form-input" type="number" id="qris-amount" placeholder="Contoh: 50000" min="1">
+                </div>
+                <button class="btn btn-primary btn-block" id="btn-generate" onclick="generateQRIS()">
+                    <i data-lucide="zap"></i> Generate QRIS
+                </button>
+            </div>
+
+            <div id="qris-result" style="display:none">
+                <div class="glass">
+                    <div class="qr-display">
+                        <img id="qris-img" src="" alt="QRIS Code">
+                        <p style="font-size:0.75rem;color:var(--text-dim);margin-top:0.75rem" id="qris-deposit-id"></p>
+                        <p style="font-size:1.125rem;font-weight:800;margin-top:0.25rem" id="qris-amount-display"></p>
+                        <div id="qris-status-badge" style="margin-top:0.5rem"></div>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;margin-top:0.75rem">
+                        <button class="btn btn-primary btn-sm" style="flex:1" onclick="checkQRISStatus()"><i data-lucide="refresh-cw"></i> Cek Status</button>
+                        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="copyQRString()"><i data-lucide="copy"></i> Copy QR</button>
+                        <button class="btn btn-danger btn-sm" onclick="cancelQRIS()"><i data-lucide="x"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ HISTORY SECTION ═══════════════════════════════ -->
+        <div id="sec-history" class="section">
+            <h2 class="section-title"><i data-lucide="clock"></i> Deposit History</h2>
+
+            <div class="form-group" style="margin-bottom:0.75rem">
+                <select class="form-select" id="history-filter" onchange="loadHistory()">
+                    <option value="">Semua Status</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="PAID">Paid</option>
+                    <option value="EXPIRED">Expired</option>
+                    <option value="CANCELLED">Cancelled</option>
+                </select>
+            </div>
+
+            <div id="history-list"><div class="empty-state"><p>Memuat...</p></div></div>
+        </div>
+
+        <!-- ═══ API KEYS SECTION ══════════════════════════════ -->
+        <div id="sec-keys" class="section">
+            <h2 class="section-title"><i data-lucide="key"></i> API Keys</h2>
+
+            <div id="alert-keys" class="alert"></div>
+            <div id="keys-list"></div>
+
+            <div class="glass">
+                <h3 style="font-size:0.875rem;font-weight:700;margin-bottom:0.75rem">Buat API Key Baru</h3>
+                <div class="form-group">
+                    <label class="form-label">Nama Key</label>
+                    <input class="form-input" type="text" id="key-name" placeholder="Contoh: Bot Telegram">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Akun GoPay</label>
+                    <select class="form-select" id="key-gopay"><option value="">Pilih akun...</option></select>
+                </div>
+                <button class="btn btn-primary btn-block btn-sm" onclick="createApiKey()">
+                    <i data-lucide="plus"></i> Buat API Key
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── Dashboard Footer ──────────────────────────────── -->
+        <footer style="text-align:center;padding:2rem 1rem 1rem;font-size:0.75rem;color:var(--text-dim);">
+            <p>© 2026 <strong>ZentraPay</strong> &mdash; <a href="https://ZentraPay.my.id" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:600;">ZentraPay.my.id</a></p>
+            <p style="margin-top:0.35rem;">Developer & Support: <a href="https://t.me/fanzxystore" target="_blank" style="color:#38bdf8;text-decoration:none;font-weight:600;">@fanzxystore</a></p>
+        </footer>
+
+    </main>
+
+    <!-- ─── Bottom Navigation ─────────────────────────────── -->
+    <nav class="bottomnav">
+        <button class="nav-tab active" data-tab="home" onclick="switchTab('home')">
+            <i data-lucide="home"></i><span>Home</span>
+        </button>
+        <button class="nav-tab" data-tab="gopay" onclick="switchTab('gopay')">
+            <i data-lucide="smartphone"></i><span>GoPay</span>
+        </button>
+        <button class="nav-tab" data-tab="qris" onclick="switchTab('qris')">
+            <i data-lucide="qr-code"></i><span>QRIS</span>
+        </button>
+        <button class="nav-tab" data-tab="history" onclick="switchTab('history')">
+            <i data-lucide="clock"></i><span>History</span>
+        </button>
+        <button class="nav-tab" data-tab="keys" onclick="switchTab('keys')">
+            <i data-lucide="key"></i><span>API</span>
+        </button>
+    </nav>
+
+    <!-- ─── Link GoPay Modal ──────────────────────────────── -->
+    <div class="modal-overlay" id="modal-link">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Hubungkan GoPay</h3>
+                <button class="modal-close" onclick="closeModal('modal-link')"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+            </div>
+
+            <div id="alert-link" class="alert"></div>
+
+            <!-- Step 1: Phone -->
+            <div id="link-step-phone">
+                <div class="form-group">
+                    <label class="form-label">Nomor Telepon GoPay</label>
+                    <input class="form-input" type="tel" id="link-phone" placeholder="08xxxxxxxxxx">
+                </div>
+                <button class="btn btn-primary btn-block" id="btn-send-otp" onclick="sendOtp()">
+                    <i data-lucide="send"></i> Kirim OTP
+                </button>
+            </div>
+
+            <!-- Step 2: OTP -->
+            <div id="link-step-otp" style="display:none">
+                <p style="font-size:0.8125rem;color:var(--text-sec);margin-bottom:1rem">
+                    Kode OTP telah dikirim ke <strong id="otp-phone-display"></strong>
+                </p>
+                <div class="form-group">
+                    <label class="form-label">Kode OTP</label>
+                    <input class="form-input mono" type="text" id="link-otp" placeholder="Masukkan kode OTP" maxlength="6" style="text-align:center;font-size:1.25rem;letter-spacing:0.5rem">
+                </div>
+                <button class="btn btn-primary btn-block" id="btn-verify-otp" onclick="verifyOtp()">
+                    <i data-lucide="check-circle"></i> Verifikasi
+                </button>
+                <button class="btn btn-ghost btn-block btn-sm" style="margin-top:0.5rem" onclick="resetLinkModal()">
+                    Kembali
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Static QR Modal ───────────────────────────────── -->
+    <div class="modal-overlay" id="modal-qr">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Set Static QR</h3>
+                <button class="modal-close" onclick="closeModal('modal-qr')"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+            </div>
+
+            <div id="alert-qr-modal" class="alert"></div>
+
+            <div class="form-group">
+                <label class="form-label">QR String (paste dari QRIS merchant)</label>
+                <textarea class="form-input" id="static-qr-input" rows="3" placeholder="Paste string QRIS statis di sini..." style="resize:vertical;font-family:'JetBrains Mono',monospace;font-size:0.75rem"></textarea>
+            </div>
+
+            <div style="text-align:center;color:var(--text-dim);font-size:0.75rem;margin:0.5rem 0">atau</div>
+
+            <div class="file-drop" id="qr-file-drop" onclick="document.getElementById('qr-file-input').click()">
+                📸 Klik atau drop gambar QR di sini
+                <input type="file" id="qr-file-input" accept="image/*">
+            </div>
+
+            <input type="hidden" id="qr-account-id">
+
+            <button class="btn btn-primary btn-block" style="margin-top:1rem" onclick="saveStaticQr()">
+                <i data-lucide="save"></i> Simpan Static QR
+            </button>
+        </div>
+    </div>
+
+    <!-- ─── View Key Modal ────────────────────────────────── -->
+    <div class="modal-overlay" id="modal-view-key">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">API Key Created</h3>
+                <button class="modal-close" onclick="closeModal('modal-view-key')"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+            </div>
+            <p style="font-size:0.8125rem;color:var(--text-sec);margin-bottom:1rem">
+                Simpan API key ini. Anda tidak bisa melihatnya lagi setelah modal ini ditutup.
+            </p>
+            <div class="code-block" id="new-key-display" style="user-select:all"></div>
+            <button class="btn btn-primary btn-block btn-sm" style="margin-top:1rem" onclick="copyNewKey()">
+                <i data-lucide="copy"></i> Copy Key
+            </button>
+        </div>
+    </div>
+
+    <script>
+    // ═══════════════════════════════════════════════════════
+    // ─── State ────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════
+    let gopayAccounts = [];
+    let currentDepositId = '';
+    let currentQrString = '';
+    let otpToken = '';
+    let otpPhone = '';
+
+    // ─── API Helper ───────────────────────────────────────
+    async function api(url, opts = {}) {
+        const res = await fetch(url, {
+            headers: { 'Content-Type': 'application/json', ...opts.headers },
+            ...opts
+        });
+        const data = await res.json();
+        if (res.status === 401 && !url.includes('/auth/')) {
+            window.location.href = '/login';
+            return;
+        }
+        return data;
+    }
+
+    // ─── Alert Helper ─────────────────────────────────────
+    function showAlert(id, msg, type = 'error') {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.className = `alert alert-${type}`;
+        el.textContent = msg;
+        el.style.display = 'block';
+        setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    // ─── Tab Navigation ───────────────────────────────────
+    function switchTab(name) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        const sec = document.getElementById('sec-' + name);
+        const tab = document.querySelector(`.nav-tab[data-tab="${name}"]`);
+        if (sec) sec.classList.add('active');
+        if (tab) tab.classList.add('active');
+
+        // Load data on tab switch
+        if (name === 'gopay') loadGopayAccounts();
+        if (name === 'qris') loadQrisAccounts();
+        if (name === 'history') loadHistory();
+        if (name === 'keys') { loadApiKeys(); loadKeyAccounts(); }
+
+        lucide.createIcons();
+    }
+
+    // ─── Logout ───────────────────────────────────────────
+    async function logout() {
+        await api('/auth/logout', { method: 'POST' });
+        window.location.href = '/login';
+    }
+
+    // ─── Modal ────────────────────────────────────────────
+    function openModal(id) {
+        document.getElementById(id).classList.add('active');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('active');
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ─── Dashboard Stats ──────────────────────────────────
+    // ═══════════════════════════════════════════════════════
+    async function loadStats() {
+        const res = await api('/api/stats');
+        if (!res?.success) return;
+        const d = res.data;
+        document.getElementById('stat-accounts').textContent = d.accounts_count;
+        document.getElementById('stat-deposits').textContent = d.total_deposits;
+        document.getElementById('stat-paid').textContent = d.paid_count;
+        document.getElementById('stat-revenue').textContent = formatRupiah(d.total_revenue);
+    }
+
+    async function loadRecentDeposits() {
+        const res = await api('/api/deposits?limit=5');
+        if (!res?.success) return;
+        const el = document.getElementById('recent-deposits');
+        if (!res.data.deposits.length) {
+            el.innerHTML = '<div class="empty-state"><p>Belum ada deposit</p></div>';
+            return;
+        }
+        el.innerHTML = res.data.deposits.map(d => `
+            <div class="deposit-item">
+                <div class="deposit-info">
+                    <div class="deposit-id">${d.deposit_id}</div>
+                    <div class="deposit-amount">${formatRupiah(d.amount)}</div>
+                    <div class="deposit-time">${formatDate(d.created_at)}</div>
+                </div>
+                <div>${statusBadge(d.status)}</div>
+            </div>
+        `).join('');
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ─── GoPay Accounts ───────────────────────────────────
+    // ═══════════════════════════════════════════════════════
+    async function loadGopayAccounts() {
+        const res = await api('/api/gopay/accounts');
+        if (!res?.success) return;
+        gopayAccounts = res.data;
+        const el = document.getElementById('gopay-accounts-list');
+
+        if (!gopayAccounts.length) {
+            el.innerHTML = '<div class="empty-state" style="margin-bottom:1rem"><i data-lucide="smartphone"></i><p>Belum ada akun GoPay yang terhubung</p></div>';
+            lucide.createIcons();
+            return;
+        }
+
+        el.innerHTML = gopayAccounts.map(a => `
+            <div class="item-card">
+                <div class="item-header">
+                    <div>
+                        <div class="item-title">📱 ${a.phone || 'Unknown'}</div>
+                        <div class="item-meta">${a.merchant_name || 'Merchant'} ${a.merchant_id ? '• ' + a.merchant_id : ''}</div>
+                    </div>
+                    ${a.has_static_qr ? '<span class="badge badge-success">QR Set</span>' : '<span class="badge badge-warning">No QR</span>'}
+                </div>
+                <div class="item-meta">Linked: ${formatDate(a.linked_at)}</div>
+                <div class="item-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="openQrModal('${a._id}')"><i data-lucide="qr-code"></i> Set QR</button>
+                    <button class="btn btn-danger btn-sm" onclick="unlinkGopay('${a._id}')"><i data-lucide="unlink"></i> Hapus</button>
+                </div>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    // ─── Link GoPay Modal ─────────────────────────────────
+    function openLinkModal() {
+        resetLinkModal();
+        openModal('modal-link');
+    }
+
+    function resetLinkModal() {
+        document.getElementById('link-step-phone').style.display = 'block';
+        document.getElementById('link-step-otp').style.display = 'none';
+        document.getElementById('link-phone').value = '';
+        document.getElementById('link-otp').value = '';
+        document.getElementById('alert-link').style.display = 'none';
+        otpToken = '';
+        otpPhone = '';
+    }
+
+    async function sendOtp() {
+        const phone = document.getElementById('link-phone').value.trim();
+        if (!phone) return showAlert('alert-link', 'Masukkan nomor telepon');
+
+        const btn = document.getElementById('btn-send-otp');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>Mengirim...';
+
+        const res = await api('/api/gopay/request-otp', {
+            method: 'POST',
+            body: JSON.stringify({ phone })
+        });
+
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="send"></i> Kirim OTP';
+        lucide.createIcons();
+
+        if (!res?.success) return showAlert('alert-link', res?.error || 'Gagal mengirim OTP');
+
+        otpToken = res.data?.otp_token || res.data?.data?.otp_token || '';
+        otpPhone = phone;
+
+        document.getElementById('otp-phone-display').textContent = phone;
+        document.getElementById('link-step-phone').style.display = 'none';
+        document.getElementById('link-step-otp').style.display = 'block';
+    }
+
+    async function verifyOtp() {
+        const otp = document.getElementById('link-otp').value.trim();
+        if (!otp) return showAlert('alert-link', 'Masukkan kode OTP');
+
+        const btn = document.getElementById('btn-verify-otp');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>Memverifikasi...';
+
+        const res = await api('/api/gopay/verify-otp', {
+            method: 'POST',
+            body: JSON.stringify({ otp, otp_token: otpToken, phone: otpPhone })
+        });
+
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="check-circle"></i> Verifikasi';
+        lucide.createIcons();
+
+        if (!res?.success) return showAlert('alert-link', res?.error || 'Verifikasi gagal');
+
+        showAlert('alert-link', res.message || 'Berhasil!', 'success');
+        setTimeout(() => {
+            closeModal('modal-link');
+            loadGopayAccounts();
+            loadStats();
+        }, 1000);
+    }
+
+    async function unlinkGopay(accountId) {
+        if (!confirm('Yakin ingin menghapus akun GoPay ini?')) return;
+        const res = await api('/api/gopay/unlink', {
+            method: 'POST',
+            body: JSON.stringify({ account_id: accountId })
+        });
+        if (res?.success) {
+            showAlert('alert-gopay', 'Akun berhasil dihapus', 'success');
+            loadGopayAccounts();
+            loadStats();
+        } else {
+            showAlert('alert-gopay', res?.error || 'Gagal menghapus');
+        }
+    }
+
+    // ─── Static QR Modal ──────────────────────────────────
+    function openQrModal(accountId) {
+        document.getElementById('qr-account-id').value = accountId;
+        document.getElementById('static-qr-input').value = '';
+        document.getElementById('alert-qr-modal').style.display = 'none';
+        openModal('modal-qr');
+    }
+
+    async function saveStaticQr() {
+        const accountId = document.getElementById('qr-account-id').value;
+        const staticQr = document.getElementById('static-qr-input').value.trim();
+        if (!staticQr) return showAlert('alert-qr-modal', 'Masukkan string QR');
+
+        const res = await api('/api/gopay/save-qr', {
+            method: 'POST',
+            body: JSON.stringify({ account_id: accountId, static_qr: staticQr })
+        });
+
+        if (res?.success) {
+            showAlert('alert-qr-modal', 'Static QR berhasil disimpan!', 'success');
+            setTimeout(() => {
+                closeModal('modal-qr');
+                loadGopayAccounts();
+            }, 800);
+        } else {
+            showAlert('alert-qr-modal', res?.error || 'Gagal menyimpan');
+        }
+    }
+
+    // QR File drop/scan with jsQR
+    const fileDrop = document.getElementById('qr-file-drop');
+    const fileInput = document.getElementById('qr-file-input');
+
+    ['dragenter', 'dragover'].forEach(ev => fileDrop.addEventListener(ev, e => { e.preventDefault(); fileDrop.classList.add('dragover'); }));
+    ['dragleave', 'drop'].forEach(ev => fileDrop.addEventListener(ev, e => { e.preventDefault(); fileDrop.classList.remove('dragover'); }));
+
+    fileDrop.addEventListener('drop', e => { if (e.dataTransfer.files.length) processQrFile(e.dataTransfer.files[0]); });
+    fileInput.addEventListener('change', e => { if (e.target.files.length) processQrFile(e.target.files[0]); });
+
+    function processQrFile(file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                if (code) {
+                    document.getElementById('static-qr-input').value = code.data;
+                    showAlert('alert-qr-modal', 'QR berhasil di-scan!', 'success');
+                } else {
+                    showAlert('alert-qr-modal', 'Gagal membaca QR dari gambar');
+                }
+            };
+            img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ─── QRIS Generator ───────────────────────────────────
+    // ═══════════════════════════════════════════════════════
+    async function loadQrisAccounts() {
+        const res = await api('/api/gopay/accounts');
+        if (!res?.success) return;
+        const sel = document.getElementById('qris-account');
+        const withQr = res.data.filter(a => a.has_static_qr);
+        if (!withQr.length) {
+            sel.innerHTML = '<option value="">Belum ada akun dengan Static QR</option>';
+            return;
+        }
+        sel.innerHTML = withQr.map(a => `<option value="${a._id}">${a.phone} — ${a.merchant_name || 'Merchant'}</option>`).join('');
+    }
+
+    async function generateQRIS() {
+        const accountId = document.getElementById('qris-account').value;
+        const amount = document.getElementById('qris-amount').value;
+        if (!accountId) return showAlert('alert-qris', 'Pilih akun GoPay terlebih dahulu');
+        if (!amount || parseInt(amount) < 1) return showAlert('alert-qris', 'Masukkan nominal yang valid');
+
+        const btn = document.getElementById('btn-generate');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>Generating...';
+
+        const res = await api('/api/qris/create', {
+            method: 'POST',
+            body: JSON.stringify({ account_id: accountId, amount: parseInt(amount) })
+        });
+
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="zap"></i> Generate QRIS';
+        lucide.createIcons();
+
+        if (!res?.success) return showAlert('alert-qris', res?.error || 'Gagal generate QRIS');
+
+        currentDepositId = res.data.deposit_id;
+        currentQrString = res.data.qr_string;
+
+        document.getElementById('qris-img').src = res.data.qr_image_url;
+        document.getElementById('qris-deposit-id').textContent = res.data.deposit_id;
+        document.getElementById('qris-amount-display').textContent = formatRupiah(res.data.amount);
+        document.getElementById('qris-status-badge').innerHTML = statusBadge(res.data.status);
+        document.getElementById('qris-result').style.display = 'block';
+    }
+
+    async function checkQRISStatus() {
+        if (!currentDepositId) return;
+        const res = await api('/api/qris/status', {
+            method: 'POST',
+            body: JSON.stringify({ deposit_id: currentDepositId })
+        });
+        if (res?.success) {
+            document.getElementById('qris-status-badge').innerHTML = statusBadge(res.data.status);
+            if (res.data.status === 'PAID') {
+                showAlert('alert-qris', '🎉 Pembayaran diterima!', 'success');
+            }
+        }
+    }
+
+    function copyQRString() {
+        navigator.clipboard.writeText(currentQrString).then(() => {
+            showAlert('alert-qris', 'QR string berhasil disalin!', 'info');
+        });
+    }
+
+    async function cancelQRIS() {
+        if (!currentDepositId) return;
+        if (!confirm('Yakin ingin membatalkan deposit ini?')) return;
+        const res = await api('/api/qris/cancel', {
+            method: 'POST',
+            body: JSON.stringify({ deposit_id: currentDepositId })
+        });
+        if (res?.success) {
+            document.getElementById('qris-status-badge').innerHTML = statusBadge('CANCELLED');
+            showAlert('alert-qris', 'Deposit dibatalkan', 'info');
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ─── History ──────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════
+    async function loadHistory() {
+        const status = document.getElementById('history-filter').value;
+        const url = `/api/deposits?limit=50${status ? '&status=' + status : ''}`;
+        const res = await api(url);
+        const el = document.getElementById('history-list');
+
+        if (!res?.success || !res.data.deposits.length) {
+            el.innerHTML = '<div class="empty-state"><i data-lucide="inbox"></i><p>Tidak ada deposit ditemukan</p></div>';
+            lucide.createIcons();
+            return;
+        }
+
+        el.innerHTML = res.data.deposits.map(d => `
+            <div class="deposit-item">
+                <div class="deposit-info">
+                    <div class="deposit-id">${d.deposit_id}</div>
+                    <div class="deposit-amount">${formatRupiah(d.amount)}</div>
+                    <div class="deposit-time">${formatDate(d.created_at)}${d.paid_at ? ' • Paid: ' + formatDate(d.paid_at) : ''}</div>
+                </div>
+                <div>${statusBadge(d.status)}</div>
+            </div>
+        `).join('');
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ─── API Keys ─────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════
+    async function loadApiKeys() {
+        const res = await api('/api/keys');
+        const el = document.getElementById('keys-list');
+        if (!res?.success || !res.data.length) {
+            el.innerHTML = '<div class="empty-state" style="margin-bottom:1rem"><i data-lucide="key"></i><p>Belum ada API key</p></div>';
+            lucide.createIcons();
+            return;
+        }
+
+        el.innerHTML = res.data.map(k => `
+            <div class="item-card">
+                <div class="item-header">
+                    <div>
+                        <div class="item-title">${k.name}</div>
+                        <div class="item-meta mono">${k.key_preview}</div>
+                    </div>
+                </div>
+                <div class="item-meta">Created: ${formatDate(k.created_at)}${k.last_used ? ' • Last used: ' + formatDate(k.last_used) : ''}</div>
+                <div class="item-actions">
+                    <button class="btn btn-ghost btn-sm" onclick="copyKey('${k.key}')"><i data-lucide="copy"></i> Copy</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteApiKey('${k.key}')"><i data-lucide="trash-2"></i> Hapus</button>
+                </div>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    async function loadKeyAccounts() {
+        const res = await api('/api/gopay/accounts');
+        if (!res?.success) return;
+        const sel = document.getElementById('key-gopay');
+        if (!res.data.length) {
+            sel.innerHTML = '<option value="">Hubungkan GoPay dulu</option>';
+            return;
+        }
+        sel.innerHTML = res.data.map(a => `<option value="${a._id}">${a.phone} — ${a.merchant_name || 'Merchant'}</option>`).join('');
+    }
+
+    async function createApiKey() {
+        const name = document.getElementById('key-name').value.trim();
+        const gopayId = document.getElementById('key-gopay').value;
+        if (!gopayId) return showAlert('alert-keys', 'Pilih akun GoPay');
+
+        const res = await api('/api/keys/create', {
+            method: 'POST',
+            body: JSON.stringify({ name: name || 'Default Key', gopay_account_id: gopayId })
+        });
+
+        if (res?.success) {
+            document.getElementById('new-key-display').textContent = res.data.key;
+            openModal('modal-view-key');
+            document.getElementById('key-name').value = '';
+            loadApiKeys();
+        } else {
+            showAlert('alert-keys', res?.error || 'Gagal membuat API key');
+        }
+    }
+
+    function copyKey(key) {
+        navigator.clipboard.writeText(key).then(() => {
+            showAlert('alert-keys', 'API key disalin!', 'info');
+        });
+    }
+
+    function copyNewKey() {
+        const key = document.getElementById('new-key-display').textContent;
+        navigator.clipboard.writeText(key).then(() => {
+            showAlert('alert-keys', 'API key disalin!', 'info');
+        });
+    }
+
+    async function deleteApiKey(key) {
+        if (!confirm('Yakin ingin menghapus API key ini?')) return;
+        const res = await api('/api/keys/delete', {
+            method: 'POST',
+            body: JSON.stringify({ key })
+        });
+        if (res?.success) {
+            showAlert('alert-keys', 'API key dihapus', 'success');
+            loadApiKeys();
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ─── Utilities ────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════
+    function formatRupiah(num) {
+        if (!num && num !== 0) return '-';
+        return 'Rp' + Number(num).toLocaleString('id-ID');
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) +
+               ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function statusBadge(status) {
+        const map = {
+            'PENDING': '<span class="badge badge-warning">Pending</span>',
+            'PAID': '<span class="badge badge-success">Paid</span>',
+            'EXPIRED': '<span class="badge badge-danger">Expired</span>',
+            'CANCELLED': '<span class="badge badge-info">Cancelled</span>'
+        };
+        return map[status] || `<span class="badge">${status}</span>`;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ─── Init ─────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+        loadStats();
+        loadRecentDeposits();
+    });
+    </script>
+</body>
+</html>
