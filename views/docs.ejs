@@ -353,7 +353,7 @@
                         </div>
                         <div class="code-block">
                             <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                            <pre class="mono text-[11px]">curl -X POST https://ZentraPay.my.id/v1/deposit/create \
+                            <pre class="mono text-[11px]">curl -X POST http://dokpay.my.id/v1/deposit/create \
   -H "Content-Type: application/json" \
   -H "x-api-key: gm_your_api_key" \
   -d '{
@@ -373,7 +373,7 @@
   <span class="json-key">"data"</span>: {
     <span class="json-key">"deposit_id"</span>: <span class="json-str">"DEP-1717148400-A1B2C3D4"</span>,
     <span class="json-key">"amount"</span>: <span class="json-num">50000</span>,
-    <span class="json-key">"qr_image_url"</span>: <span class="json-str">"https://ZentraPay.my.id/v1/qris/image/DEP-..."</span>,
+    <span class="json-key">"qr_image_url"</span>: <span class="json-str">"http://dokpay.my.id/v1/qris/image/DEP-..."</span>,
     <span class="json-key">"qr_string"</span>: <span class="json-str">"00020101021254..."</span>,
     <span class="json-key">"status"</span>: <span class="json-str">"PENDING"</span>,
     <span class="json-key">"created_at"</span>: <span class="json-str">"2026-05-31T10:00:00.000Z"</span>,
@@ -422,7 +422,7 @@
                         <span class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest block mb-3">Request Example</span>
                         <div class="code-block">
                             <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                            <pre class="mono text-[11px]">curl -X POST https://ZentraPay.my.id/v1/deposit/status \
+                            <pre class="mono text-[11px]">curl -X POST http://dokpay.my.id/v1/deposit/status \
   -H "Content-Type: application/json" \
   -H "x-api-key: gm_your_api_key" \
   -d '{
@@ -508,7 +508,7 @@
                         <span class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest block mb-3">Request Example</span>
                         <div class="code-block">
                             <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                            <pre class="mono text-[11px]">curl -X POST https://ZentraPay.my.id/v1/deposit/cancel \
+                            <pre class="mono text-[11px]">curl -X POST http://dokpay.my.id/v1/deposit/cancel \
   -H "Content-Type: application/json" \
   -H "x-api-key: gm_your_api_key" \
   -d '{
@@ -577,7 +577,7 @@
                         <span class="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest block mb-3">Request Example</span>
                         <div class="code-block">
                             <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-                            <pre class="mono text-[11px]">curl -X POST https://ZentraPay.my.id/v1/deposit/history \
+                            <pre class="mono text-[11px]">curl -X POST http://dokpay.my.id/v1/deposit/history \
   -H "Content-Type: application/json" \
   -H "x-api-key: gm_your_api_key" \
   -d '{
@@ -647,10 +647,10 @@
                     <div class="code-block">
                         <button class="copy-btn" onclick="copyCode(this)">Copy</button>
                         <pre class="mono text-[11px]"><span class="json-key">&lt;!-- Embed di HTML --&gt;</span>
-&lt;img src="https://ZentraPay.my.id/v1/qris/image/DEP-1717148400-A1B2C3D4" /&gt;
+&lt;img src="http://dokpay.my.id/v1/qris/image/DEP-1717148400-A1B2C3D4" /&gt;
 
 <span class="json-key"># Download via curl</span>
-curl -o qris.png https://ZentraPay.my.id/v1/qris/image/DEP-1717148400-A1B2C3D4</pre>
+curl -o qris.png http://dokpay.my.id/v1/qris/image/DEP-1717148400-A1B2C3D4</pre>
                     </div>
                     <div class="mt-4 p-4 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30 rounded-xl">
                         <div class="flex items-start gap-2">
@@ -782,7 +782,7 @@ curl -o qris.png https://ZentraPay.my.id/v1/qris/image/DEP-1717148400-A1B2C3D4</
                     </div>
                     <span class="text-sm font-extrabold">Zentra<span class="text-emerald-600">Pay</span></span>
                 </div>
-                <p class="text-xs text-[var(--text-muted)] font-bold">QRIS Payment Gateway API &mdash; <a href="https://ZentraPay.my.id" target="_blank" class="text-emerald-600 dark:text-emerald-400 hover:underline">ZentraPay.my.id</a></p>
+                <p class="text-xs text-[var(--text-muted)] font-bold">QRIS Payment Gateway API &mdash; <a href="http://dokpay.my.id" target="_blank" class="text-emerald-600 dark:text-emerald-400 hover:underline">dokpay.my.id</a></p>
                 <p class="text-xs text-[var(--text-muted)] mt-1">Official Support & Developer: <a href="https://t.me/fanzxystore" target="_blank" class="text-sky-500 hover:underline font-semibold">@fanzxystore</a></p>
             </footer>
 
